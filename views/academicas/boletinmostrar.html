@@ -1,0 +1,69 @@
+{{
+__author__ = "Alan Edmundo Etkin <spametki@gmail.com>"
+__copyright__ = "(C) 2024 Alan Edmundo Etkin. GNU GPL 3."
+}}
+
+{{extend 'layout.html'}}
+
+{{block header}}
+<div class="jumbotron jumbotron-fluid background" style="background-color: #333; color:white; padding:30px;word-wrap:break-word;">
+  <div class="container center">
+    <h1 class="display-5">Boletín de calificaciones</h1>
+  </div>
+</div>
+{{pass}}
+
+{{=H5(estudiante.nombre, " DNI ", estudiante.documento_numero)}}
+{{=H5("Ciclo: ", inscripcion.ciclo)}}
+{{=H5("Nivel: ", inscripcion.nivel, " División: ", inscripcion.division, " Turno: ", inscripcion.turno)}}
+{{=H5("Período: ", BOLETINES[boletin])}}
+
+{{encabezados=[TH(NOTAS_FORMATO[nota]["rotulo"]) for nota in BOLETINES_NOTAS[boletin]]}}
+
+{{if BOLETIN_ASISTENCIA_MATERIA_MOSTRAR[boletin]:}}
+  {{encabezados.insert(0, TH("Inasistencias"))}}
+{{pass}}
+
+{{if BOLETIN_MOSTRAR_NIVEL:}}
+  {{encabezados.insert(0, TH("Nivel"))}}
+{{pass}}
+
+{{materias=list()}}
+{{for materia in notas:}}
+  {{columnas=list()}}
+  {{columnas.append(TD(notas[materia]["nota"]["materia"]))}}
+  {{if BOLETIN_MOSTRAR_NIVEL:}}
+      {{columnas.append(TD(NUMEROS_ROMANOS[int(notas[materia]["nota"]["nivel"])]))}}
+  {{pass}}
+  {{if BOLETIN_ASISTENCIA_MATERIA_MOSTRAR[boletin]:}}
+      {{columnas.append(TD(notas[materia]["asistencia"][1]))}}
+  {{pass}}
+  {{for nota in BOLETINES_NOTAS[boletin]:}}
+      {{columnas.append(TD(notas[materia]["nota"][nota]))}}
+  {{pass}}
+  {{materias.append(TR(*columnas))}}
+{{pass}}
+
+{{=TABLE(THEAD(TR(TH("Asignatura"), *encabezados)), TBODY(*materias))}}
+
+{{=H5("Inasistencias: ", asistencia[1])}}
+
+{{if BOLETIN_TALLERES_MOSTRAR[boletin]:}}
+    {{=H3("Talleres")}}
+    {{=TABLE(THEAD(TR(TH("Taller"), TH("Nota"))), TBODY(*[TR(TD(taller.taller_inscripcion.taller), TD(taller.taller_calificacion.calificacion)) for taller in talleres]))}}
+{{pass}}
+
+{{if BOLETIN_CONCEPTOS_MOSTRAR[boletin]:}}
+{{=H3("Concepto")}}
+    {{if not (concepto is None):}}
+        {{=BEAUTIFY(concepto)}}
+    {{pass}}
+    {{=P("Abreviaciones: ", *[" %s, %s;" % (concepto, BOLETIN_CONCEPTOS[concepto]) for concepto in BOLETIN_CONCEPTOS])}}
+{{pass}}
+
+{{if BOLETIN_PREVIAS_MOSTRAR[boletin]:}}
+    {{if not (previas is None):}}
+        {{=BEAUTIFY(previas)}}
+    {{pass}}
+{{pass}}
+

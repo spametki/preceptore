@@ -1,0 +1,17 @@
+{{
+__author__ = "Alan Edmundo Etkin <spametki@gmail.com>"
+__copyright__ = "(C) 2024 Alan Edmundo Etkin. GNU GPL 3."
+}}
+
+{{extend 'layout.html'}}
+
+{{block header}}
+
+{{=H3("Preceptore: aplicación web para escuelas secundarias")}}
+{{=BR()}}
+{{=H1("Escuela: ", ESCUELA, " ", ESCUELA_NOMBRE)}}
+{{=H3("CUE: ", ESCUELA_CUE)}}
+{{=BR()}}
+
+{{=DIV(P("Preceptore es un sistema de gestión administrativa académica para escuelas secundarias que permite llevar los listados y registros de las escuelas en forma dinámica y automatizada."), P("La versión actual contempla el almacenamiento y actualización de registros de notas, POF, alumnos y el seguimiento de los horarios personalizados por caja curricular; incluye cálculo de horas libres por curso y por alumno. Incluye un módulo de asistencia a clase con parte diario de aula por asignatura o general y un reporte pormenorizado de asistencia con rango variable y cálculo automático de media y promedios de presentismo por estudiante; este módulo facilita los cálculos mensuales de registro de curso y también los informes por asignatura."), P("La aplicación genera reportes al vuelo de los distintos registros y soporta la búsqueda avanzada con múltiples criterios; administra inscripciones e implementa el cálculo e informe de progreso académico por alumno incluyendo detalle de trayectos, materias aprobadas, materias pendientes y permite la edición de los registros de matrículación e inscripción por materia."))}}
+{{end}}

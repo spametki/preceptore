@@ -1,0 +1,143 @@
+{{
+__author__ = "Alan Edmundo Etkin <spametki@gmail.com>"
+__copyright__ = "(C) 2024 Alan Edmundo Etkin. GNU GPL 3."
+}}
+
+{{extend 'layout.html'}}
+
+{{block header}}
+<div class="jumbotron jumbotron-fluid background" style="background-color: #333; color:white; padding:30px;word-wrap:break-word;">
+  <div class="container center">
+    <h1 class="display-5">Registro de asistencia</h1>
+  </div>
+</div>
+{{end}}
+
+{{=UL(
+LI("Ciclo: ", session.asistencia_control.ciclo),
+LI("Cuatrimestre: ", session.asistencia_control.cuatrimestre or ""),
+LI("Turno: ", session.asistencia_control.turno),
+LI("Contraturno: ", session.asistencia_control.contraturno or ""),
+LI("Nivel: ", session.asistencia_control.nivel),
+LI("División: ", session.asistencia_control.division or ""),
+LI("Materia: ", session.asistencia_control.materia),
+LI("Comisión: ", session.asistencia_control.comision or ""),
+)}}
+
+{{for mes in registro:}}
+    {{=H3(str(MESES[mes]).capitalize())}}
+    {{encabezado = list()}}
+    {{encabezado.append(TH("Alumna/o"))}}
+    {{encabezado.append(TH("Documento"))}}
+
+    {{totales = list()}}
+    {{totales.append(TH("Totales"))}}
+    {{totales.append(TH())}}
+
+    {{for dia in registro[mes]:}}
+        {{encabezado.append(TH(dia))}}
+        {{if "total" in registro[mes][dia]:}}
+            {{totales.append(TH(registro[mes][dia]["total"]))}}
+        {{else:}}
+            {{totales.append(TH("-"))}}
+        {{pass}}
+    {{pass}}
+
+    {{encabezado.append(TH("Asistencias"))}}
+    {{encabezado.append(TH("Inasistencias"))}}
+
+    {{if mes in totales_por_mes:}}
+        {{totales.append(TH(totales_por_mes[mes]))}}
+    {{else:}}
+        {{totales.append(TH("-"))}}
+    {{pass}}
+
+    {{if mes in totales_por_mes:}}
+        {{totales.append(TH(totales_inasistencias_por_mes[mes]))}}
+    {{else:}}
+        {{totales.append(TH("-"))}}
+    {{pass}}
+
+    {{renglones = list()}}
+    {{for estudiante in datos:}}
+        {{columnas = list()}}
+        {{columnas.append(TD(datos[estudiante]["nombre"]))}}
+        {{columnas.append(TD(datos[estudiante]["documento"]))}}
+
+        {{for dia in registro[mes]:}}
+            <!-- problema: la asistencia por día en datos es en ordinal -->
+            {{if registro[mes][dia]["ordinal"] in datos[estudiante]["asistencia"]:}}
+                {{tupla = datos[estudiante]["asistencia"][registro[mes][dia]["ordinal"]]}}
+                {{texto = "/".join([t for t in tupla if not (t is None)])}}
+                {{columnas.append(TD(texto))}}
+            {{else:}}
+                {{columnas.append(TD("-"))}}
+            {{pass}}
+
+        {{pass}}
+
+        {{if mes in datos[estudiante]["totales"]:}}
+            {{columnas.append(TD(datos[estudiante]["totales"][mes]))}}
+        {{else:}}
+            {{columnas.append(TD("-"))}}
+        {{pass}}
+
+        {{if mes in datos[estudiante]["totales_inasistencias"]:}}
+            {{columnas.append(TD(datos[estudiante]["totales_inasistencias"][mes]))}}
+        {{else:}}
+            {{columnas.append(TD("-"))}}
+        {{pass}}
+
+        {{renglones.append(TR(*columnas))}}
+    {{pass}}
+
+    {{=TABLE(TR(*encabezado, *renglones, *totales))}}
+    {{=BR()}}
+    
+    {{if len(inscriptos[mes]) >0:}}
+        {{primer_dia = len(inscriptos[mes][sorted(inscriptos[mes])[0]])}}
+        {{ultimo_dia = len(inscriptos[mes][sorted(inscriptos[mes])[-1]])}}
+    {{else:}}
+        {{primer_dia = ultimo_dia = "n/a"}}
+    {{pass}}
+
+    {{altas_mes = bajas_mes = 0}}
+
+    {{if mes in altas:}}
+        {{altas_mes = len(altas[mes])}}
+    {{pass}}
+
+    {{if mes in bajas:}}
+        {{bajas_mes = len(bajas[mes])}}
+    {{pass}}
+    
+    {{=UL(LI("Porcentaje de asistencias:", " ", porcentajes[mes]),
+          LI("Asistencia media:", " ", medias[mes]),
+          LI("Altas:", " ", altas_mes),
+          LI("Bajas:", " ", bajas_mes),                    
+          LI("Alumnos el primer día:", " ", primer_dia),
+          LI("Alumnos el último día:", " ", ultimo_dia))}}
+    {{=BR()}}
+{{pass}}
+
+{{=H3("Totales")}}
+
+{{encabezado = list()}}
+
+{{encabezado.append(TH("Alumna/o"))}}
+{{encabezado.append(TH("Documento"))}}
+{{encabezado.append(TH("Asistencias"))}}
+{{encabezado.append(TH("Inasistencias"))}}
+{{renglones = list()}}
+{{for estudiante in datos:}}
+    {{columnas = list()}}
+    {{columnas.append(TD(datos[estudiante]["nombre"]))}}
+    {{columnas.append(TD(datos[estudiante]["documento"]))}}
+    {{columnas.append(TD(datos[estudiante]["total"]))}}
+    {{columnas.append(TD(datos[estudiante]["total_inasistencias"]))}}
+    {{renglones.append(TR(*columnas))}}
+{{pass}}
+
+{{=TABLE(TR(*encabezado, *renglones))}}
+{{=BR()}}
+

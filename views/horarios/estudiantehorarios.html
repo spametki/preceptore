@@ -1,0 +1,65 @@
+{{
+__author__ = "Alan Edmundo Etkin <spametki@gmail.com>"
+__copyright__ = "(C) 2024 Alan Edmundo Etkin. GNU GPL 3."
+}}
+
+{{extend 'layout.html'}}
+
+{{block header}}
+<div class="jumbotron jumbotron-fluid background" style="background-color: #333; color:white; padding:30px;word-wrap:break-word;">
+  <div class="container center">
+    <h1 class="display-5">Horarios alumna/o</h1>
+    {{=H5(estudiante.nombre)}}
+    {{=H5("Documento: ", estudiante.documento_numero)}}    
+    
+    {{=H5("Turno:", turno, " Nivel:", nivel, " Division:", division)}}
+    {{=H5("Semana del ", DIAS[fecha.weekday()], " ", fecha.day, "/", fecha.month)}}
+    
+  </div>
+</div>
+{{=A("Volver a consultas", _href=URL(c="estudiantes", f="estudiantemenu", args=(estudiante.id,)))}}
+
+{{for t2 in horarios_semana:}}
+    {{=H5("Horarios turno " + TURNOS_ETIQUETAS[t2])}}
+    {{t = TABLE(THEAD(TR(*[TH(DIAS_ROTULOS[x]) for x in range(len(horarios_semana[t2]))])),
+TBODY(*[TR(*[TD() for y in range(len(horarios_semana[t2]))]) for x in range(len(horarios_semana[t2][0]))]))}}
+
+    {{contador_dias = 0}}
+    {{for dia in horarios_semana[t2]:}}
+        {{contador_horas = 0}}
+        {{for hora in dia:}}
+        {{# agregar información de la hora a celda de línea correspondiente}}
+            {{if hora["espacio"] == "":}}
+                {{t[1][contador_horas][contador_dias].append("Sin asignatura")}}
+            {{elif len(hora["docentes"]) == 0:}}
+                {{t[1][contador_horas][contador_dias].append("Sin docente asignada/o")}}        
+            {{elif hora["suspension"]:}}
+                {{t[1][contador_horas][contador_dias].append("Suspendida")}}
+                {{t[1][contador_horas][contador_dias].append(BR())}}
+                {{t[1][contador_horas][contador_dias].append(hora["motivo"])}}
+            {{else:}}
+                {{t[1][contador_horas][contador_dias].append(hora["espacio"])}}
+                {{t[1][contador_horas][contador_dias].append(" ")}}
+                {{t[1][contador_horas][contador_dias].append(NUMEROS_ROMANOS[hora["nivel"]])}}
+                {{t[1][contador_horas][contador_dias].append(BR())}}
+                {{docentes = " / ".join(d.split(",")[0] for d in hora["docentes"])}}
+                {{t[1][contador_horas][contador_dias].append(docentes)}}
+            {{pass}}
+        {{contador_horas += 1}}
+        {{pass}}
+    {{contador_dias += 1}}
+    {{pass}}
+
+    {{t[0][0].insert(0, TH("hora"))}}
+    {{t[0][0].append(TH("horario"))}}
+
+    {{for x in range(len(horarios_semana[t2][0])):}}
+    {{t[1][x].insert(0, TD(x +1))}}
+    {{hora_inicio = str(horarios_semana[t2][0][x]["desde"].hour) + ":" + str(horarios_semana[t2][0][x]["desde"].minute)}}
+    {{hora_finalizacion = str(horarios_semana[t2][0][x]["hasta"].hour) + ":" + str(horarios_semana[t2][0][x]["hasta"].minute)}}
+    {{t[1][x].append(" a ".join((hora_inicio, hora_finalizacion)))}}
+    {{pass}}
+
+    {{=t}}
+    {{=HR()}}
+{{pass}}

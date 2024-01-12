@@ -1,0 +1,40 @@
+{{
+__author__ = "Alan Edmundo Etkin <spametki@gmail.com>"
+__copyright__ = "(C) 2024 Alan Edmundo Etkin. GNU GPL 3."
+}}
+
+{{extend 'layout.html'}}
+
+{{block header}}
+{{=BR()}}
+{{=H1(estudiante.nombre)}}
+{{end}}
+
+{{=TABLE(TBODY(
+TR(TD("Documento tipo"), TD(estudiante.documento_tipo or "")),
+TR(TD("Documento número"), TD(estudiante.documento_numero)),
+TR(TD("Edad"), TD(edad or "")),
+TR(TD("Calle"), TD(estudiante.domicilio_calle or "")),
+TR(TD("Altura"), TD(estudiante.domicilio_altura or "")),
+TR(TD("Localidad"), TD(estudiante.domicilio_localidad or "")),
+TR(TD("Datos"), TD(estudiante.domicilio_datos or "")),
+TR(TD("Código postal"), TD(estudiante.domicilio_cp or "")),
+TR(TD("Responsable"), TD(estudiante.responsable_nombre)),
+TR(TD("Teléfono"), TD(estudiante.responsable_telefono or ""))
+))}}
+{{=BR()}}
+{{=H3("Ver horarios")}}
+{{=form}}
+{{=H3("Consultas")}}
+{{=A("Analítico", _href=URL("academicas", "analitico", args=(estudiante.id,)))}}
+{{=A("Actualizar y analítico", _href=URL("academicas", "analitico", args=(estudiante.id, "actualizar")))}}
+{{=A("Pendientes", _href=URL("academicas", "pendientes", args=(estudiante.id,)))}}
+{{=A("Calcular trayecto", _href=URL("academicas", "trayectocalcular", args=(estudiante.id,)))}}
+{{=A("Modificar datos", _href=URL("estudiantes", "estudiante", args=(estudiante.id,)))}}
+{{=A("Menú de trayecto", _href=URL("estudiantes", "estudiante", args=(estudiante.id,), vars=dict(visualizar="true")))}}
+{{=H3("Visualizar trayectos")}}
+{{if not (inscripciones is None):}}
+  {{for inscripcion in inscripciones:}}
+    {{=A(inscripcion.ciclo, _href=URL("academicas", "trayecto", args=(inscripcion.id,)))}}
+  {{pass}}
+{{pass}}

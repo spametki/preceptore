@@ -1,0 +1,12 @@
+{{
+__author__ = "Alan Edmundo Etkin <spametki@gmail.com>"
+__copyright__ = "(C) 2024 Alan Edmundo Etkin. GNU GPL 3."
+}}
+
+{{extend 'layout.html'}}
+<h1>Presione "Enviar" para crear el backup</h1>
+{{=form}}
+{{if resultado is None:}}
+{{else:}}
+{{=P(resultado)}}
+{{pass}}

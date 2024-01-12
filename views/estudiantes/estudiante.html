@@ -1,0 +1,49 @@
+{{
+__author__ = "Alan Edmundo Etkin <spametki@gmail.com>"
+__copyright__ = "(C) 2024 Alan Edmundo Etkin. GNU GPL 3."
+}}
+
+{{extend 'layout.html'}}
+
+{{block header}}
+
+<div class="jumbotron jumbotron-fluid background" style="background-color: #333; color:white; padding:30px;word-wrap:break-word;">
+<div class="container center">
+{{if estudiante_id == None:}}    
+    <h1 class="display-5">Nuevo estudiante</h1>
+{{else:}}
+    <h1 class="display-5">Datos estudiante</h1>
+{{pass}}
+</div>
+</div>
+{{end}}
+
+{{=A("<<- Lista estudiantes", _href=URL(c="estudiantes", f="estudiantes"))}}
+
+{{if estudiante_id != None:}}
+    {{=A("Modificar datos", _href=URL("estudiantes", "estudiante", args=[estudiante_id,]))}}
+    {{for ciclo in CICLOS:}}
+        {{=A("Inscripción %s ->" % ciclo, _href=URL(c="estudiantes", f="inscripcion", args=[estudiante_id, ciclo]))}}
+    {{pass}}
+    {{=A("Materias aprobadas ->>", _href=URL(c="academicas", f="aprobadasingresar", args=[estudiante_id,]))}}
+    {{=A("Trayecto ->>>", _href=URL(c="academicas", f="trayectonuevo", args=[estudiante_id,]))}}
+    {{=BR()}}
+    {{=A("Consultas estudiante", _href=URL(c="estudiantes", f="estudiantemenu", args=[estudiante_id,]))}}
+{{pass}}
+
+{{if creado:}}
+    {{if duplicado == None:}}
+        {{=H3("Nuevo estudiante:", " ", estudiante.nombre)}}
+        {{=H3("Documento: ", estudiante.documento_numero)}}
+    {{else:}}
+        {{=H3("Estudiante:", " ", estudiante.nombre)}}
+    {{pass}}
+{{elif modificado:}}
+    {{=H3("Estudiante:", " ", estudiante.nombre)}}
+    {{=H3("Documento: ", estudiante.documento_numero)}}
+{{else:}}
+    {{if estudiante_id == None:}}
+    {{pass}}
+    {{=form}}    
+{{pass}}
+

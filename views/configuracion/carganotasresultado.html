@@ -1,0 +1,29 @@
+{{
+__author__ = "Alan Edmundo Etkin <spametki@gmail.com>"
+__copyright__ = "(C) 2024 Alan Edmundo Etkin. GNU GPL 3."
+}}
+
+{{extend 'layout.html'}}
+
+{{block header}}
+<div class="jumbotron jumbotron-fluid background" style="background-color: #333; color:white; padding:30px;word-wrap:break-word;">
+  <div class="container center">
+    <h1 class="display-5">Resultado de carga de notas</h1>
+  </div>
+</div>
+{{end}}
+
+{{=H5("Asignatura: ", datos.materia)}}
+{{=H5("Ciclo: ", datos.ciclo)}}
+{{=H5("Nivel: ", datos.nivel)}}
+{{=H5("Division: ", datos.division or "")}}
+{{=H5("Cuatrimestre: ", datos.cuatrimestre or "")}}
+{{=H5("Comisión: ", datos.comision or "")}}
+
+{{if session.notas_datos.aproximar == True:}}
+{{=H5("Se cargaron %s notas" % (len(notas) - len(rechazados)))}}
+{{=H5("Se excluyeron %s notas" % (len(notas_excluidas) + len(rechazados)))}}
+{{else:}}
+{{=H5("Se cargaron %s notas" % len(notas))}}
+{{=H5("Se excluyeron %s notas" % len(notas))}}
+{{pass}}

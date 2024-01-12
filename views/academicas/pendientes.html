@@ -1,0 +1,25 @@
+{{
+__author__ = "Alan Edmundo Etkin <spametki@gmail.com>"
+__copyright__ = "(C) 2024 Alan Edmundo Etkin. GNU GPL 3."
+}}
+
+{{extend 'layout.html'}}
+
+{{block header}}
+<div class="jumbotron jumbotron-fluid background" style="background-color: #333; color:white; padding:30px;word-wrap:break-word;">
+  <div class="container center">
+    <h1 class="display-5">Listado de materias pendientes</h1>
+  </div>
+</div>
+
+{{=H5("Alumna/o: ", estudiante.nombre)}}
+{{=H5("Documento: ", estudiante.documento_numero)}}
+{{=A("Volver a consultas", _href=URL("estudiantes", "estudiantemenu", args=(estudiante.id,)))}}
+{{end}}
+
+{{for n in NIVELES:}}
+
+{{=H3("Nivel", " ", n)}}
+{{=TABLE(BODY(TR(*[TD(m) for m in tabla_datos[n]])))}}
+         
+{{pass}}

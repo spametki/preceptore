@@ -1,0 +1,35 @@
+{{
+__author__ = "Alan Edmundo Etkin <spametki@gmail.com>"
+__copyright__ = "(C) 2024 Alan Edmundo Etkin. GNU GPL 3."
+}}
+
+{{extend 'layout.html'}}
+
+{{block header}}
+<div class="jumbotron jumbotron-fluid background" style="background-color: #333; color:white; padding:30px;word-wrap:break-word;">
+  <div class="container center">
+    <h1 class="display-5">Visualizar trayecto</h1>
+  </div>
+</div>
+{{=A("Volver a consultas", _href=URL("estudiantes", "estudiantemenu", args=(estudiante.id,)))}}
+{{end}}
+
+{{=H3(estudiante.nombre)}}
+{{=H3("Documento: ", estudiante.documento_numero)}}
+{{=H3("Inscripción a ciclo ", inscripcion.ciclo)}}
+
+{{if len(calificaciones) > 0:}}
+  {{encabezado = THEAD(TR(TH("Materia"), TH("Nivel"), TH("Cuatrimestre")))}}
+  {{renglones = list()}}
+  {{for calificacion in calificaciones:}}
+    {{if calificacion.cuatrimestre is None:}}
+      {{cuatrimestre = "--"}}
+    {{else:}}
+      {{cuatrimestre = calificacion.cuatrimestre}}
+    {{pass}}
+    {{renglones.append(TR(TD(calificacion.materia), TD(NUMEROS_ROMANOS[int(calificacion.nivel)]), TD(cuatrimestre)))}}
+  {{pass}}
+  {{=TABLE(encabezado, TBODY(*renglones))}}
+{{else:}}
+{{=P("No se encontraron materias para el ciclo")}}
+{{pass}}

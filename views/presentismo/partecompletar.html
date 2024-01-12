@@ -1,0 +1,38 @@
+{{
+__author__ = "Alan Edmundo Etkin <spametki@gmail.com>"
+__copyright__ = "(C) 2024 Alan Edmundo Etkin. GNU GPL 3."
+}}
+
+{{extend 'layout.html'}}
+
+{{block header}}
+<div class="jumbotron jumbotron-fluid background" style="background-color: #333; color:white; padding:30px;word-wrap:break-word;">
+  <div class="container center">
+    <h1 class="display-5">Parte de aula </h1>
+    {{=H3("%s/%s/%s" % (datos.fecha.day, datos.fecha.month, datos.fecha.year))}}
+  </div>
+</div>
+{{end}}
+{{=H5("Ciclo: ", datos.ciclo)}}
+{{if not datos.cuatrimestre is None:}}
+{{=H5("Cuatrimestre: ", datos.cuatrimestre)}}
+{{pass}}
+
+{{=H5("Turno: ", datos.turno, "(contraturno)" if datos.contraturno else "")}}
+
+{{if not datos.materia is None:}}
+{{=H5("Asignatura: ", datos.materia)}}
+{{pass}}
+
+{{=H5("Nivel: ", datos.nivel)}}
+
+{{if not datos.division is None:}}
+{{=H5("Division: ", datos.division)}}
+{{pass}}
+
+{{if not datos.comision is None:}}
+{{=H5("Comisión: ", datos.comision)}}
+{{pass}}
+{{=BR()}}
+{{=form}}
+

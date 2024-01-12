@@ -1,0 +1,21 @@
+{{
+__author__ = "Alan Edmundo Etkin <spametki@gmail.com>"
+__copyright__ = "(C) 2024 Alan Edmundo Etkin. GNU GPL 3."
+}}
+
+{{extend 'layout.html'}}
+
+{{block header}}
+<div class="jumbotron jumbotron-fluid background" style="background-color: #333; color:white; padding:30px;word-wrap:break-word;">
+  <div class="container center">
+    <h1 class="display-5">Boletines: lista de alumnos</h1>
+  </div>
+</div>
+{{pass}}
+
+{{inscripciones = list()}}
+{{for inscripcion in lista:}}
+  {{inscripciones.append(LI(A(inscripcion.estudiante.nombre, _href=URL("boletinmostrar", args=("inscripcion", inscripcion.id)))))}}
+{{pass}}
+{{=UL(*inscripciones)}}
+

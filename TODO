@@ -1,0 +1,36 @@
+- Soporte para múltiples planes. Distribución en parametros_estaticos.py
+de nivel y división por plan. Actualización en toda la aplicación de la
+opción de plan
+- Alta de estudiante e inscripción manual
+- Optimización de campos de domicilio en estudiante. Un solo campo para la
+dirección
+- Redistribución de las condiciones y tipo de cursada para analítico. Por
+Ej.: P.D. y Regular no son excluyentes entre sí. Ver opciones de cursada
+en normativa de títulos
+
+controllers/academicas.py
+ - Método para armar comisiones de materias cuatrimestrales
+ - Método para distribuir comisiones de materias anuales
+ - Altas y bajas individuales de comisiones cuatrimestrales
+ - Altas y bajas individuales de materias anuales
+ - Trayecto solo visualizar para menú de trayecto: action trayecto;
+ agregar a menú
+ - Action para editar un boletin, o sea modificar en una sola
+ grilla múltiples registros de db.calificacion
+ - Action conceptoscompletar:
+     - eliminar redundancia en objetos dict
+
+controllers/academicas.py
+- Action carganotasconfirmar:
+    - Completar algoritmo para confirmar los cambios
+en la planilla y almacenar las calificaciones.
+    - Falta agregar la información en la vista.
+    - Error en la vista cuando se sube al sitio
+
+controllers/presentismo.py
+- Action asistenciamostrar:
+    - Marcar si hubo suspensión en la columna de la vista
+    - Agrupar objetos y optimizar bucles
+- Action asistenciamateriamostrar:
+    - Marcar si hubo suspensión en la columna de la vista
+    - Agrupar objetos y optimizar bucles
