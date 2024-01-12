@@ -3,8 +3,9 @@ cache/
 databases/
 errors/
 sessions/
-uploads/git
+uploads/
 venv/
+private/backup.csv
 
 # inherit https://github.com/github/gitignore/blob/master/Python.gitignore
 
