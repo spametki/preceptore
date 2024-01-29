@@ -75,3 +75,49 @@ class RadioWidgetAlternative(OptionsWidget):
             opts[-1][0][0]['hideerror'] = False
         return parent(child(*opts), **attr)
 
+
+class inscripcionTituloVirtualField(object):
+    """ Clase para calcular el campo virtual titulo
+    en función de los valores de nivel y división."""
+
+    def titulo(self):
+        if (type(self.inscripcion.nivel) in (str, int)) and (type(self.inscripcion.division) in (str, int)):
+            if self.inscripcion.nivel.isdigit() and self.inscripcion.division.isdigit():
+                nivel = int(self.inscripcion.nivel)
+                division = int(self.inscripcion.division)
+                return DIVISIONES_PLAN[nivel][division]
+            else:
+                return None
+        else:
+            return None
+
+class conceptoTituloVirtualField(object):
+    """ Clase para calcular el campo virtual titulo
+    en función de los valores de nivel y división."""
+
+    def titulo(self):
+        if (type(self.concepto.nivel) in (str, int)) and (type(self.concepto.division) in (str, int)):
+            if self.concepto.nivel.isdigit() and self.concepto.division.isdigit():
+                nivel = int(self.concepto.nivel)
+                division = int(self.concepto.division)
+                return DIVISIONES_PLAN[nivel][division]
+            else:
+                return None
+        else:
+            return None
+
+class suspensionActividadTituloVirtualField(object):
+    """ Clase para calcular el campo virtual titulo
+    en función de los valores de nivel y división."""
+
+    def titulo(self):
+        if (type(self.suspension_actividad.nivel) in (str, int)) and (type(self.suspension_actividad.division) in (str, int)):
+            if self.suspension_actividad.nivel.isdigit() and self.suspension_actividad.division.isdigit():
+                nivel = int(self.suspension_actividad.nivel)
+                division = int(self.suspension_actividad.division)
+                return DIVISIONES_PLAN[nivel][division]
+            else:
+                return None
+        else:
+            return None
+

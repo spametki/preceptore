@@ -168,6 +168,9 @@ if configuration.get('scheduler.enabled'):
 #### Definiciones de tablas de la aplicación
 
 db.define_table("asignatura",
+               Field("titulo", "integer", requires=IS_EMPTY_OR(IS_IN_SET(PLAN_ABREVIACIONES)),
+               label="Plan",
+               compute=plan_establecer),
                Field("nivel", "integer",
                requires=IS_IN_SET(NIVELES)),
                Field("materia",
@@ -219,9 +222,10 @@ db.define_table("estudiante",
                 Field("nacionalidad"),
                 Field("genero",
                 requires=IS_IN_SET(GENEROS)),
-                Field("domicilio_calle"),
-                Field("domicilio_altura"),
+                Field("domicilio_direccion"),
                 Field("domicilio_localidad"),
+                Field("domicilio_partido"),
+                Field("domicilio_provincia"),
                 # piso, departamento y otras informaciones
                 Field("domicilio_datos"),
                 Field("domicilio_cp"),
@@ -279,6 +283,9 @@ db.define_table("concepto",
 
 db.define_table("calificacion",
                 Field("estudiante", "reference estudiante"),
+                Field("titulo", "integer", requires=IS_EMPTY_OR(IS_IN_SET(PLAN_ABREVIACIONES)),
+                label="Plan",
+                compute=plan_establecer),
                 Field("materia",
                 requires=IS_EMPTY_OR(IS_IN_SET(MATERIAS))),
                 Field("nivel",
@@ -416,6 +423,11 @@ db.calificacion.estudiante.requires = IS_IN_DB(db,
 db.nota.estudiante.requires = IS_IN_DB(db,
     "estudiante.id", "%(nombre)s Doc %(documento_numero)s")
 
+# Campos virtuales calculados para mostrar el plan asociado
+# a la división
+db.inscripcion.virtualfields.append(inscripcionTituloVirtualField())
+db.concepto.virtualfields.append(conceptoTituloVirtualField())
+db.suspension_actividad.virtualfields.append(suspensionActividadTituloVirtualField())
 
 for f in NOTAS_FORMATO:
     if NOTAS_FORMATO[f]["tipo"] == "concepto":
@@ -427,4 +439,4 @@ for f in NOTAS_FORMATO:
 
 for k in ASISTENCIA:
     db.asistencia[ASISTENCIA_CATEGORIAS[k]].label = ASISTENCIA[k]
-    
+

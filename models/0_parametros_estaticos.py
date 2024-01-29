@@ -3,6 +3,8 @@
 __author__ = "Alan Edmundo Etkin <spametki@gmail.com>"
 __copyright__ = "(C) 2024 Alan Edmundo Etkin. GNU GPL 3."
 
+import json
+
 """ Parámetros estáticos que no requieren otros objetos
 """
 
@@ -189,15 +191,28 @@ NOTAS_FORMATO = {"nota_01":{"tipo": "concepto",
 # para que la inscripción incluya plan
 
 PLAN = {
-        1:("EF", "TdlR", "Geo", "Hist", "Tall", "Bio", "LyL", "EA", "EC", "Mate"),
-        2:("EF", "Hist", "Tall", "Mate", "TdlR", "Geo", "EC", "LyL", "Fis", "Ing", "Bio"),
-        3:("EF", "Fis", "Hist", "EC", "Mate", "Ing", "Tall", "TdlR", "LyL", "Geo", "Quim"),
-        4:("EF", "Tall", "HdA", "PD", "FyPAP", "Ing", "IP", "CyTr", "RP", "Mate", "PA", "LyL"),
-        5:("EF", "Tall", "LyL", "PD", "Ing", "FyPAP", "PyM", "Mate", "LA", "RP", "HdA"),
-        6:("EF", "EyG", "Tall", "CyTec", "PD", "PyM", "RP", "CIM", "HdA", "GPP", "IdM", "FyPAP")
+        1:{
+            1:("EF", "TdlR", "Geo", "Hist", "Tall", "Bio", "LyL", "EA", "EC", "Mate"),
+            2:("EF", "Hist", "Tall", "Mate", "TdlR", "Geo", "EC", "LyL", "Fis", "Ing", "Bio"),
+            3:("EF", "Fis", "Hist", "EC", "Mate", "Ing", "Tall", "TdlR", "LyL", "Geo", "Quim"),
+            4:("EF", "Tall", "HdA", "PD", "FyPAP", "Ing", "IP", "CyTr", "RP", "Mate", "PA", "LyL"),
+            5:("EF", "Tall", "LyL", "PD", "Ing", "FyPAP", "PyM", "Mate", "LA", "RP", "HdA"),
+            6:("EF", "EyG", "Tall", "CyTec", "PD", "PyM", "RP", "CIM", "HdA", "GPP", "IdM", "FyPAP")
+        },
+        2:{
+            1:("Geo", "Hist", "Tall", "Bio", "LyL", "EA", "EC", "Mate"),
+            2:("EF", "Tall", "Mate", "TdlR", "Geo", "EC", "LyL", "Fis", "Ing", "Bio"),
+            3:("EF", "Fis", "EC", "Mate", "Ing", "Tall", "TdlR", "LyL", "Geo", "Quim"),
+            4:("EF", "Tall", "HdA", "FyPAP", "Ing", "IP", "CyTr", "RP", "Mate", "PA", "LyL"),
+            5:("EF", "Tall", "LyL", "PD", "FyPAP", "PyM", "Mate", "LA", "RP", "HdA"),
+            6:("EF", "EyG", "Tall", "CyTec", "PyM", "RP", "CIM", "HdA", "GPP", "IdM", "FyPAP")
         }
+}
 
-PLAN_NOMBRES = {1: "Técnico en Comunicación Publicitaria"}
+PLAN_NOMBRES = {1: "Técnico en Comunicación Publicitaria",
+                2: "Técnico en Producción Gráfica"}
+
+PLAN_ABREVIACIONES = {1: "Publicidad", 2: "Gráfico"}
 
 # Correlatividades: "Materia": ((Nivel, nro. de índice), ...)
 #                   Nivel se indica 1, 2, 3,...
@@ -207,6 +222,26 @@ PLAN_NOMBRES = {1: "Técnico en Comunicación Publicitaria"}
 #                   Nota: La sintaxis de Python
 #                   requiere usar coma al final en las tuplas
 #                   de un elemento
+
+DIVISIONES_PLAN = (
+(None,None,None,None,None,None,None,None,None,None,None),
+(None,1,1,1,2,2,2,2,2,2,2),
+(None,1,1,1,2,2,2,2,2,2,2),
+(None,1,1,1,2,2,2,2,2,2,2),
+(None,1,1,1,2,2,2,2,2,2,2),
+(None,1,1,1,2,2,2,2,2,2,2),
+(None,1,1,1,2,2,2,2,2,2,2),
+)
+
+DIVISIONES_TURNOS = (
+(None,None,None,None,None,None,None,None,None,None,None),
+(None,"M","M","M","M","T","T","T","N","N","N"),
+(None,"M","M","M","M","T","T","T","N","N","N"),
+(None,"M","M","M","M","T","T","T","N","N","N"),
+(None,"M","M","M","M","T","T","T","N","N","N"),
+(None,"M","M","M","M","T","T","T","N","N","N"),
+(None,"M","M","M","M","T","T","T","N","N","N"),
+)
 
 ASISTENCIA = {"p": "Presente", "t": "Tarde", "tj": "Tarde justificado", "ap": "Ausente con presencia",
 "aj": "Ausente justificado",
@@ -263,7 +298,7 @@ NOTAS_PARAMETROS = {
 "nota_07": "K",
 "nota_08": "L",
 "nota_09": "M",
-"definitiva": "N",
+"definitiva": "N"
 }
 
 NOTA_MOTIVOS = ("Asistencia", "Convivencia", "Administrativa", "Comunicación", "Otros")
@@ -292,14 +327,63 @@ BOLETINES_PLAZOS = {
 
 # Conceptos de alumnos para boletín
 BOLETIN_CONCEPTOS_MOSTRAR = {1:False, 2:False, 3:False, 4:False, 5:False, 6:False}
+
 BOLETIN_CONCEPTOS_TIPOS = {"concepto_01": "Relación con docentes y personal de la escuela", "concepto_02": "Relación con sus compañeros", "concepto_03": "Cumplimiento de normas de convivencia"}
 BOLETIN_CONCEPTOS = {"MB": "Muy bueno", "B": "Bien", "R": "Regular", "I": "Insuficiente"}
 
 BOLETIN_PREVIAS_MOSTRAR = {1:True, 2:True, 3:True, 4:True, 5:True, 6:True}
 BOLETIN_TALLERES_MOSTRAR = {1:False, 2:False , 3:False , 4:False, 5:False, 6:False}
+
 BOLETIN_ASISTENCIA_MATERIA_MOSTRAR = {1:False, 2:False , 3:False , 4:False, 5:False, 6:False}
 BOLETIN_MOSTRAR_NIVEL = False # Mostrar nivel en cada materia
 
 # Valor aceptable de similitud
 # al comparar nombres de estudiantes
 APROXIMACION_ESTUDIANTE = 0.9
+
+# Etiqueta personalizada para generar código en el
+# cliente que muestre automáticamente el plan según
+# el nivel y división seleccionados
+TITULO_MOSTRAR = H3("Plan: sin datos", _id="titulo_mostrar")
+
+TITULO_SCRIPT = """
+// Declarar arrays con información
+
+// a) nombres de planes
+var planes = %s;
+
+// b) matriz por división
+var divisionesPlan = %s;
+
+var tituloEstablecer = function(){
+// Si división y nivel no coincide
+// con el título seleccionado en la action
+// de plan, advertir con cartel o ventana.
+
+// Recuperar nivel
+var nivel = parseInt(jQuery('[name=nivel]').val());
+
+// Recuperar division
+var division = parseInt(jQuery('[name=division]').val());
+
+// Si ambos son números, buscar el plan
+// y mostrarlo
+if (!(isNaN(nivel) || isNaN(division))){
+jQuery('#titulo_mostrar').html('Plan: ' + planes[divisionesPlan[nivel][division]]);
+} else {
+jQuery('#titulo_mostrar').html('Plan: sin datos');
+};
+};
+
+// Al cargar el documento o al cambiar el formulario,
+// establecer el plan
+jQuery(document).ready(function(){
+   tituloEstablecer();
+   jQuery('[name=nivel]').change(tituloEstablecer);
+   jQuery('[name=division]').change(tituloEstablecer);
+});
+""" % (json.dumps(PLAN_ABREVIACIONES), json.dumps(DIVISIONES_PLAN))
+
+# Elemento que actualiza el plan cuando se cambian nivel y división
+TITULO_AUTOCOMPLETAR = SCRIPT(TITULO_SCRIPT, _type="text/javascript")
+

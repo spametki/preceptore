@@ -1,0 +1,34 @@
+{{
+__author__ = "Alan Edmundo Etkin <spametki@gmail.com>"
+__copyright__ = "(C) 2024 Alan Edmundo Etkin. GNU GPL 3."
+}}
+
+{{extend 'layout.html'}}
+
+{{block header}}
+<div class="jumbotron jumbotron-fluid background" style="background-color: #333; color:white; padding:30px;word-wrap:break-word;">
+  <div class="container center">
+    <h1 class="display-5">Seleccionar plan</h1>
+  </div>
+</div>
+{{end}}
+
+{{=H3(estudiante.nombre)}}
+{{=H3("Documento: ", estudiante.documento_numero)}}
+
+{{=A("<<- Lista estudiantes", _href=URL(c="estudiantes", f="estudiantes"))}}
+{{=A("Datos estudiante", _href=URL("estudiantes", "estudiante", args=[estudiante.id,]))}}
+
+{{for ciclo in CICLOS:}}
+    {{=A("Inscripción %s <-" % ciclo, _href=URL(c="estudiantes", f="inscripcion", args=[estudiante.id, ciclo]))}}
+{{pass}}
+{{=A("Nuevo plan", _href=URL(c="academicas", f="planseleccionar", args=["estudiante", estudiante.id,]))}}
+{{=A("Informar materias aprobadas ->", _href=URL(c="academicas", f="aprobadasingresar", args=[estudiante.id,]))}}
+{{=A("Trayecto ->>>", _href=URL(c="academicas", f="trayectonuevo", args=[estudiante.id,]))}}
+
+{{if seleccion == False:}}
+{{=form}}
+{{else:}}
+{{=P("Plan seleccionado: %s" % PLAN_NOMBRES[int(session.planes[estudiante.id])])}}
+{{pass}}
+

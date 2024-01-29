@@ -18,7 +18,7 @@ def normalizar_nombre(nombre):
         ) for n in nombre.split(" ")]
     return normalizado
 
-def buscar_estudiante(nombre, documento):
+def buscar_estudiante(db, nombre, documento):
     # Crear un listado de nombres no encontrados
     # al finalizar la carga y almacenarlo en session.avisos
 
@@ -177,16 +177,32 @@ def calificar(calificacion):
     return resultado
 
 
-def estudiante_recuperar(estudiante_id):
+def estudiante_recuperar(db, estudiante_id):
     estudiante = db(db.estudiante.id == estudiante_id
     ).select().first()
-
     return estudiante
 
-def notas_recuperar(estudiante_id, ciclo=None):
+def plan_recuperar(db, estudiante_id):
+    inscripcion = db(db.inscripcion.estudiante == estudiante_id).select().last()
+    if not (inscripcion is None):
+        try:
+            nivel = int(inscripcion.nivel)
+            division = int(inscripcion.division)
+        except TypeError:
+            if "planes" in session:
+                if estudiante_id in session.planes:
+                    return session.planes[estudiante_id]
+            return None    
+        return DIVISIONES_PLAN[nivel][division]
+    else:
+        raise HTTP(500, "No se encontró inscripción para el estudiante")
+
+def notas_recuperar(db, estudiante_id, ciclo=None, plan=None):
     query = db.calificacion.estudiante == estudiante_id
     if ciclo:
         query &= db.calificacion.ciclo == ciclo
+    if plan:
+        query &= db.calificacion.titulo == plan
     notas = db(query).select(orderby=db.calificacion.id)
     return notas
 
@@ -223,7 +239,7 @@ def ciclo_determinar(fecha):
     else:
         return fecha.year -1
 
-def trayecto_calcular(notas):
+def trayecto_calcular(plan, notas):
     
     # lista de materias a cursar
     materias = dict()
@@ -232,7 +248,7 @@ def trayecto_calcular(notas):
     for nivel in NIVELES:
         materias[nivel] = []
         #    recorrer cada materia del nivel
-        for materia in PLAN[nivel]:
+        for materia in PLAN[plan][nivel]:
             # ¿la aprobó o promovió?
             promueve = acredito = False
             for nota in notas:
@@ -253,20 +269,20 @@ def trayecto_calcular(notas):
                 aprobadas = 0
                 # si la materia no está en CORRELATIVIDADES,
                 # la puede cursar (no tiene correlativas)
-                if not materia in CORRELATIVIDADES[nivel]:
+                if not materia in CORRELATIVIDADES[plan][nivel]:
                     puedecursar = True
                 else:
-                    if callable(CORRELATIVIDADES[nivel][
+                    if callable(CORRELATIVIDADES[plan][nivel][
                     materia]):
-                        puedecursar = CORRELATIVIDADES[nivel][
+                        puedecursar = CORRELATIVIDADES[plan][nivel][
                         materia](nivel, notas)
                     else:
-                        for t in CORRELATIVIDADES[nivel][
+                        for t in CORRELATIVIDADES[plan][nivel][
                         materia]:
                             for nota in notas:
                                 if (int(nota.nivel) == t[0]
                                 ) and (nota.materia == \
-                                ABREVIACIONES[PLAN[t[0]][t[1]]]
+                                ABREVIACIONES[PLAN[plan][t[0]][t[1]]]
                                 ) and ((nota.promueve == True
                                 ) or (nota.acredito == True)):
                                     aprobadas += 1
@@ -275,7 +291,7 @@ def trayecto_calcular(notas):
                                         # cursa sin acreditar
                                         pass
                         # si: agregar a lista
-                        if aprobadas >= len(CORRELATIVIDADES[
+                        if aprobadas >= len(CORRELATIVIDADES[plan][
                         nivel][materia]):
                             puedecursar = True
                         else:
@@ -287,7 +303,7 @@ def trayecto_calcular(notas):
                     materia])
     return materias
 
-def horarios_grilla(fecha, turno, nivel, division,
+def horarios_grilla(db, fecha, turno, nivel, division,
                     estudiante_id = None, suspension = False):
 
     # TODO: soporte para mútiples turnos
@@ -295,6 +311,7 @@ def horarios_grilla(fecha, turno, nivel, division,
 
     ciclo = ciclo_determinar(fecha)
     cuatrimestre = cuatrimestre_determinar(fecha)
+    plan = DIVISIONES_PLAN[nivel][division]
     
     if estudiante_id != None:
         # caso 1) obtener todas las asignaturas
@@ -317,6 +334,7 @@ def horarios_grilla(fecha, turno, nivel, division,
             if not filtrar:
                 query = db.asignatura.materia == nota.materia
                 query &= db.asignatura.nivel == nota.nivel
+                query &= db.asignatura.titulo == nota.titulo
                 if nota.cuatrimestre != None:
                     query &= db.asignatura.cuatrimestre == \
                     cuatrimestre
@@ -338,6 +356,8 @@ def horarios_grilla(fecha, turno, nivel, division,
         query = db.asignatura.turno == turno
         query &= db.asignatura.nivel == nivel
         query &= db.asignatura.division == division
+        query &= db.asignatura.titulo == nota.titulo
+        
         query &= db.asignatura.materia.belongs(
         ESPACIOS_COMUNES)
         asignaturas_comunes = db(query).select()
@@ -351,6 +371,7 @@ def horarios_grilla(fecha, turno, nivel, division,
         query = db.asignatura.turno == turno
         query &= db.asignatura.nivel == nivel
         query &= db.asignatura.division == division
+        query &= db.asignatura.titulo == nota.titulo
 
         # para ordenar por hora en .select()
         # ejemplo: orderby=db.asignatura.lunes 
@@ -585,10 +606,10 @@ def correlativasdys(nivel, notas):
     else:
         return False
 
-def correlativasmedia(nivel, notas):
+def correlativasmedia(plan, nivel, notas):
     # para educación media
     # sin trayectos de reingreso
-    anteriores = len(PLAN(nivel))
+    anteriores = len(PLAN[plan](nivel))
     acreditadas = 0    
     if int(nivel) > 1:
         for nota in notas:
@@ -705,7 +726,7 @@ def asistencia_media(dias, asistencias):
     else:
         return round(asistencias/dias)
 
-def asistencia_alumno(estudiante, desde, hasta):
+def asistencia_alumno(db, estudiante, desde, hasta):
     # Devuelve las asistencias e inasistencias
     # en un período determinado por alumno    
     # asistencias -> "total"
@@ -1023,7 +1044,7 @@ def asistencia_alumno(estudiante, desde, hasta):
     return datos["total"], datos["total_inasistencias"]
 
 
-def asistenciamateria_alumno(asignatura, calificacion, estudiante, desde, hasta):
+def asistenciamateria_alumno(db, asignatura, calificacion, estudiante, desde, hasta):
     # Devuelve las asistencias e inasistencias
     # asistencias -> "total"
     # inasistencias -> "total_inasistencias"
@@ -1420,7 +1441,7 @@ def asistenciamateria_alumno(asignatura, calificacion, estudiante, desde, hasta)
 
     return datos["total"], datos["total_inasistencias"]
 
-def previas_establecer(alumno, boletin):
+def previas_establecer(db, alumno, plan, boletin):
 
     # - implementar control de previas:
     # se puede reutilizar el código de la action pendientes.
@@ -1460,7 +1481,7 @@ def previas_establecer(alumno, boletin):
     for n in NIVELES:
         if n < nivel:
             previas[n] = list()
-            for materia in PLAN[n]:
+            for materia in PLAN[plan][n]:
                 previas[n].append(ABREVIACIONES[materia])
         else:
             break
@@ -1472,6 +1493,7 @@ def previas_establecer(alumno, boletin):
     boletin_fecha = datetime.date(ciclo + BOLETINES_PLAZOS[boletin][2], BOLETINES_PLAZOS[boletin][1], BOLETINES_PLAZOS[boletin][0])
 
     qc = db.calificacion.estudiante == alumno.estudiante.id
+    qc &= db.calificacion.titulo == plan
     qc &= db.calificacion.alta_fecha <= boletin_fecha
     qc &= db.calificacion.nivel < nivel
     calificaciones = db(qc).select()
@@ -1492,4 +1514,66 @@ def previas_establecer(alumno, boletin):
     
     # e) devolver un listado por nivel con las previas
     return previas
+
+def plan_establecer(row):
+    """ Para el campo calculado "titulo"
+    en las tablas asignatura y calificación
+    """
+    if (type(row.nivel) in (str, int)) and (type(row.division) in (str, int)):
+        if row.nivel.isdigit() and row.division.isdigit():
+            nivel = int(row.nivel)
+            division = int(row.division)
+            return DIVISIONES_PLAN[nivel][division]
+        else:
+            return None
+    else:
+        return None
+
+def plan_comprobar(form):
+    # Comprueba que coincida el plan
+    # del nivel seleccionado con el
+    # que se configuró para la inscripción
+    try:
+        estudiante = int(form.vars.estudiante)
+        nivel = int(form.vars.nivel)
+        division = int(form.vars.division)
+    except TypeError:
+        form.errors.division = "Seleccione nivel y división"
+        return
+
+    if "planes" in session:
+        if estudiante in session.planes:
+            configurado = session.planes[estudiante]
+            seleccionado = DIVISIONES_PLAN[nivel][division]
+            if not (configurado == seleccionado):
+                form.errors.division = "La división corresponde a %s pero el plan seleccionado es %s" % (PLAN_ABREVIACIONES[seleccionado], PLAN_ABREVIACIONES[configurado])
+        else:
+            form.errors.division = "No se configuró un plan"
+    else:
+        form.errors.division = "No se configuró un plan"
+
+def plan_actualizar(form):
+    # Actualiza el plan seleccionado (sin referencia
+    # a un alumno) en session al aceptar un formulario
+    # con nivel y división
+    try:
+        nivel = int(form.vars.nivel)
+        division = int(form.vars.division)
+        session.plan = DIVISIONES_PLAN[nivel][division]
+    except (TypeError, KeyError, AttributeError):
+        return
+
+def titulo_mostrar_actualizar():
+    # Recupera el plan (sin referencia
+    # a un alumno) en session y devuelve
+    # una etiqueta con el plan para mostrar
+    # en las vistas
+    if "plan" in session:
+        if session.plan is None:
+            texto = "sin datos"
+        else:
+            texto = PLAN_ABREVIACIONES[int(session.plan)]
+    else:
+        texto = "sin datos"
+    TITULO_MOSTRAR[0] = "Plan: %s" % texto
 
