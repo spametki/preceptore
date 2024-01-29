@@ -25,12 +25,22 @@ session.avisos = []
 #### Conversores de datos para carga automatizada
 
 CORRELATIVIDADES = {
-1:{},
-2:{},
-3:{},
-4:{},
-5:{},
-6:{}
+    1:{
+        1:{},
+        2:{},
+        3:{},
+        4:{},
+        5:{},
+        6:{}
+    },
+    2:{
+        1:{},
+        2:{},
+        3:{},
+        4:{},
+        5:{},
+        6:{}
+    }
 }
 
 REGISTRO_CONVERSORES = {

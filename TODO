@@ -1,9 +1,4 @@
-- Soporte para múltiples planes. Distribución en parametros_estaticos.py
-de nivel y división por plan. Actualización en toda la aplicación de la
-opción de plan
 - Alta de estudiante e inscripción manual
-- Optimización de campos de domicilio en estudiante. Un solo campo para la
-dirección
 - Redistribución de las condiciones y tipo de cursada para analítico. Por
 Ej.: P.D. y Regular no son excluyentes entre sí. Ver opciones de cursada
 en normativa de títulos
@@ -34,3 +29,4 @@ controllers/presentismo.py
 - Action asistenciamateriamostrar:
     - Marcar si hubo suspensión en la columna de la vista
     - Agrupar objetos y optimizar bucles
+

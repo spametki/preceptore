@@ -9,11 +9,12 @@ __copyright__ = "(C) 2024 Alan Edmundo Etkin. GNU GPL 3."
 <div class="jumbotron jumbotron-fluid background" style="background-color: #333; color:white; padding:30px;word-wrap:break-word;">
   <div class="container center">
     <h1 class="display-5">Horarios alumna/o</h1>
-    {{=H5(estudiante.nombre)}}
-    {{=H5("Documento: ", estudiante.documento_numero)}}    
-    
-    {{=H5("Turno:", turno, " Nivel:", nivel, " Division:", division)}}
-    {{=H5("Semana del ", DIAS[fecha.weekday()], " ", fecha.day, "/", fecha.month)}}
+    {{=H3(estudiante.nombre)}}
+    {{=H3("Documento: ", estudiante.documento_numero)}}    
+    {{=H3("Turno:", turno, " Nivel:", nivel, " Division:", division)}}
+    {{titulo_mostrar_actualizar()}}
+    {{=TITULO_MOSTRAR}}
+    {{=H3("Semana del ", DIAS[fecha.weekday()], " ", fecha.day, "/", fecha.month)}}
     
   </div>
 </div>

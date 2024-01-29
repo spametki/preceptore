@@ -17,6 +17,9 @@ __copyright__ = "(C) 2024 Alan Edmundo Etkin. GNU GPL 3."
 {{=H3(estudiante.nombre)}}
 {{=H3("Documento: ", estudiante.documento_numero)}}
 {{=H3("Inscripción a ciclo ", inscripcion.ciclo)}}
+{{if not (plan is None):}}
+{{=H3("Plan: ", PLAN_ABREVIACIONES[plan])}}
+{{pass}}
 
 {{if len(calificaciones) > 0:}}
   {{encabezado = THEAD(TR(TH("Materia"), TH("Nivel"), TH("Cuatrimestre")))}}

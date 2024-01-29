@@ -16,8 +16,14 @@ def analitico():
         if request.args[1] == "actualizar":
             actualizar = True
 
-    estudiante = estudiante_recuperar(estudiante_id)
-    notas = notas_recuperar(estudiante_id)
+    estudiante = estudiante_recuperar(db, estudiante_id)
+    
+    # hay que recuperar última inscripción válida
+    # para establecer plan del analítico
+    plan = plan_recuperar(db, estudiante_id)
+    
+    notas = notas_recuperar(db, estudiante_id, plan=plan)
+    
     if actualizar and (notas != None):
         notas = notas_actualizar(notas)
 
@@ -27,7 +33,7 @@ def analitico():
     tabla_datos = dict()
     for n in NIVELES:
         tabla_datos[n] = []
-        for v in PLAN[n]:
+        for v in PLAN[plan][n]:
             materia_datos = [ABREVIACIONES[v], "N/A",
             "--------", "----", "--------", ""]
             for nota in notas:
@@ -63,15 +69,21 @@ def pendientes():
         if request.args[1] == "actualizar":
             actualizar = True
 
-    estudiante = estudiante_recuperar(estudiante_id)
-    notas = notas_recuperar(estudiante_id)
+    estudiante = estudiante_recuperar(db, estudiante_id)
+    
+    # hay que recuperar última inscripción válida
+    # para establecer plan del analítico
+    plan = plan_recuperar(db, estudiante_id)
+        
+    notas = notas_recuperar(db, estudiante_id, plan=plan)
+    
     if actualizar and (notas != None):
         notas = notas_actualizar(notas)
 
     tabla_datos = dict()
     for nivel in NIVELES:
         tabla_datos[nivel] = []
-        for materia in PLAN[nivel]:
+        for materia in PLAN[plan][nivel]:
             tabla_datos[nivel].append(ABREVIACIONES[materia])
             for nota in notas:
                 if (nota.materia == ABREVIACIONES[materia]) and (
@@ -96,13 +108,19 @@ def trayectocalcular():
             actualizar = True
     
     # recupera alumno y notas
-    estudiante = estudiante_recuperar(estudiante_id)
-    notas = notas_recuperar(estudiante_id)
+    estudiante = estudiante_recuperar(db, estudiante_id)
+    
+    # hay que recuperar última inscripción válida
+    # para establecer plan del analítico
+    plan = plan_recuperar(db, estudiante_id)
+
+    notas = notas_recuperar(db, estudiante_id, plan=plan)
+    
     if actualizar and (notas != None):
         notas = notas_actualizar(notas)
 
     # recupera materias que puede cursar
-    materias = trayecto_calcular(notas)
+    materias = trayecto_calcular(plan, notas)
                 
     return dict(estudiante = estudiante, materias = materias)
 
@@ -118,22 +136,32 @@ def aprobadasingresar():
 
     enviado = False
 
-    # a) recuperar el plan
-    plan = dict()
-    for n in PLAN:
-        plan[n] = [False for item in PLAN[n]]
-    
     estudiante_id = int(request.args[0])
-    estudiante = estudiante_recuperar(estudiante_id)
-    notas = notas_recuperar(estudiante_id)
+    estudiante = estudiante_recuperar(db, estudiante_id)
+
+    # hay que recuperar última inscripción válida
+    # para establecer plan del analítico
+    plan = plan_recuperar(db, estudiante_id)
+    
+    if plan is None:
+        session.flash = "Para ingresar materias hay que seleccionar previamente el plan"
+        redirect(URL(c="estudiantes", f="estudiante", args=(estudiante_id,), vars={"visualizar": "true"}))
+
+    notas = notas_recuperar(db, estudiante_id, plan=plan)
     notas = notas_actualizar(notas)
+
+    # a) recuperar el plan
+    plan_aprobadas = dict()
+    for n in PLAN[plan]:
+        plan_aprobadas[n] = [False for item in PLAN[plan][n]]
+
 
     # b) recuperar listado de materias
     # acreditadas por la/el estudiante
     for nota in notas:
         nivel = int(nota.nivel)
         if nota.acredito == True:
-            plan[nivel][PLAN[nivel].index(materia_abreviar(
+            plan_aprobadas[nivel][PLAN[plan][nivel].index(materia_abreviar(
             nota.materia))] = True
 
     # Generar tabla con campos para ingresar condición,
@@ -142,12 +170,12 @@ def aprobadasingresar():
         
     campos = []
     
-    for nivel in plan:
-        for x in range(len(plan[nivel])):
-            if plan[nivel][x] == False:
+    for nivel in plan_aprobadas:
+        for x in range(len(plan_aprobadas[nivel])):
+            if plan_aprobadas[nivel][x] == False:
                 campos.append(Field("materia_%s_%s" % (nivel, x),
                 "boolean", label="%s %s" % (
-                ABREVIACIONES[PLAN[nivel][x]],
+                ABREVIACIONES[PLAN[plan][nivel][x]],
                 NUMEROS_ROMANOS[nivel])))
                 campos.append(Field(
                 "condicion_%s_%s" % (nivel, x), 
@@ -178,9 +206,10 @@ def aprobadasingresar():
                notasnuevas[nivelymateria] = dict()
                notasnuevas[nivelymateria]["estudiante"] = \
                estudiante_id
+               notasnuevas[nivelymateria]["plan"] = plan
                notasnuevas[nivelymateria]["nivel"] = nivel
                notasnuevas[nivelymateria]["materia"] = \
-               ABREVIACIONES[PLAN[nivel][materia]]
+               ABREVIACIONES[PLAN[plan][nivel][materia]]
            if "materia" in f:
                notasnuevas[nivelymateria]["acredito"] = \
                form.vars[f]
@@ -210,23 +239,31 @@ def trayecto():
     # en las que el estudiante está
     # inscripto en el ciclo especificado
     # indicando nivel, división y comisión
-    # TODO
     
     # Argumentos:
     # 0: inscripcion id
     q = db.inscripcion.estudiante == db.estudiante.id
     q &= db.inscripcion.id == int(request.args[0])
     alumno = db(q).select().first()
+    inscripcion = alumno.inscripcion
     if not (alumno is None):
+        try:
+            plan = DIVISIONES_PLAN[int(inscripcion.nivel)][int(inscripcion.division)]
+        except TypeError:
+            plan = None
+            
         estudiante = alumno.estudiante
         inscripcion = alumno.inscripcion
         qc = db.calificacion.estudiante == estudiante.id
+        qc &= db.calificacion.titulo == plan
         qc &= db.calificacion.ciclo == int(inscripcion.ciclo)
         qc &= db.calificacion.baja_fecha == None
         calificaciones = db(qc).select()
-        return dict(estudiante=estudiante, inscripcion=inscripcion, calificaciones=calificaciones)
+        
+        return dict(estudiante=estudiante, inscripcion=inscripcion,
+        calificaciones=calificaciones, plan=plan)
     else:
-        return HTTP(500, "No se encontró la inscripción especificada")
+        raise HTTP(500, "No se encontró la inscripción especificada")
 
 @auth.requires_membership('administradores')
 def trayectonuevo():
@@ -239,8 +276,18 @@ def trayectonuevo():
     # recupera estudiante y notas
     estudiante_id = int(request.args[0])
 
-    estudiante = estudiante_recuperar(estudiante_id)
-    notas = notas_recuperar(estudiante_id)
+    estudiante = estudiante_recuperar(db, estudiante_id)
+
+    # hay que recuperar última inscripción válida
+    # para establecer plan del analítico
+    plan = plan_recuperar(db, estudiante_id)
+
+    if plan is None:
+        session.flash = "Para armar el trayecto hay que seleccionar previamente el plan"
+        redirect(URL(c="estudiantes", f="estudiante", args=(estudiante_id,), vars={"visualizar": "true"}))
+
+    
+    notas = notas_recuperar(db, estudiante_id, plan=plan)
 
     inscripcion = db(db.inscripcion.estudiante == \
     estudiante_id).select(orderby=db.inscripcion.id).last()
@@ -250,7 +297,7 @@ def trayectonuevo():
 
     # recuperar las materias que puede cursar
     notas = notas_actualizar(notas)
-    materias = trayecto_calcular(notas)
+    materias = trayecto_calcular(plan, notas)
     
     # si la inscripcion no tiene nivel actualizarlo
     # al de la materia de nivel mayor
@@ -323,7 +370,9 @@ def trayectonuevo():
         default=division),
         *[field for field in materias_formulario])
 
-    if form.process().accepted:
+    form.vars["estudiante"] = estudiante_id
+
+    if form.process(onvalidation=plan_comprobar).accepted:
         enviado = True
         # actualizar inscripción
         inscripcion.update_record(nivel=form.vars.nivel,
@@ -346,6 +395,7 @@ def trayectonuevo():
                 query = db.calificacion.ciclo == ciclo
                 query &= db.calificacion.nivel == n
                 query &= db.calificacion.materia == materia
+                query &= db.calificacion.titulo == plan
                 query &= db.calificacion.estudiante == \
                 estudiante_id
                
@@ -358,6 +408,7 @@ def trayectonuevo():
                     "ciclo": ciclo,
                     "turno": turno,
                     "nivel": n,
+                    "plan": plan,
                     "division": divisiones[n-1],
                     "materia": materia,
                     "condicion": CONDICION_POR_DEFECTO}
@@ -387,7 +438,7 @@ def boletin():
         Field("nivel", requires=IS_IN_SET(NIVELES)),
         Field("division", requires=IS_IN_SET(DIVISIONES)))
 
-    if form.process().accepted:
+    if form.process(onvalidation=plan_actualizar).accepted:
         # generar listado
         # de inscripciones
         # redirigir a listado
@@ -397,15 +448,17 @@ def boletin():
 
 @auth.requires_membership('consultas')
 def boletinlista():
+    nivel = int(session.boletin_opciones.nivel)
+    division = int(session.boletin_opciones.division)
     # recuperar listado de inscripcion
     # generar en cada item el link a mostrar el boletin
     qi = db.inscripcion.ciclo == session.boletin_opciones.ciclo
     qi &= db.inscripcion.turno == session.boletin_opciones.turno
-    qi &= db.inscripcion.nivel == session.boletin_opciones.nivel
-    qi &= db.inscripcion.division == session.boletin_opciones.division
+    qi &= db.inscripcion.nivel == nivel
+    qi &= db.inscripcion.division == division
     inscripciones = db(qi).select()
     lista = inscripciones
-    return dict(lista=lista)
+    return dict(lista=lista, nivel=nivel, division=division)
 
 @auth.requires_membership('consultas')
 def boletinmostrar():
@@ -428,10 +481,16 @@ def boletinmostrar():
     inscripcion = alumno.inscripcion
     estudiante = alumno.estudiante
     
+    try:
+        plan = DIVISIONES_PLAN[int(inscripcion.nivel)][int(inscripcion.division)]
+    except TypeError:
+        plan = None
+
     # obtener las materias del alumno para el ciclo elegido
     qc = db.calificacion.estudiante == estudiante.id
     qc &= db.calificacion.ciclo == ciclo
     qc &= db.calificacion.turno == turno
+    qc &= db.calificacion.titulo == plan
     calificaciones = db(qc).select()
     actualizadas = notas_actualizar(calificaciones)
 
@@ -443,7 +502,7 @@ def boletinmostrar():
     fin_periodo = datetime.date(ciclo + BOLETINES_PLAZOS[boletin][2], BOLETINES_PLAZOS[boletin][1], BOLETINES_PLAZOS[boletin][0])
     fin_cuatrimestre = datetime.date(ciclo, CUATRIMESTRE_CAMBIO[1], CUATRIMESTRE_CAMBIO[0])
 
-    asistencia = asistencia_alumno(alumno, inicio_clases, fin_periodo)
+    asistencia = asistencia_alumno(db, alumno, inicio_clases, fin_periodo)
 
     # notas: Objeto que almacena las notas a mostrar
     # ordenado por nivel y materia y datos de asistencia
@@ -484,12 +543,13 @@ def boletinmostrar():
             query_asignatura = db.asignatura.materia == calificacion.materia
             query_asignatura &= db.asignatura.nivel == calificacion.nivel
             query_asignatura &= db.asignatura.division == calificacion.division
+            query_asignatura &= db.asignatura.titulo == calificacion.titulo
             query_asignatura &= db.asignatura.turno == calificacion.turno
             query_asignatura &= db.asignatura.comision == calificacion.comision                
             query_asignatura &= db.asignatura.cuatrimestre == calificacion.cuatrimestre
             asignatura = db(query_asignatura).select().first()
 
-            notas[calificacion.id]["asistencia"] = asistenciamateria_alumno(asignatura, calificacion, alumno, inicio, fin)
+            notas[calificacion.id]["asistencia"] = asistenciamateria_alumno(db, asignatura, calificacion, alumno, inicio, fin)
     
     # - obtener resumen de calificaciones de talleres
     # 1) establecer si se informan talleres
@@ -505,7 +565,7 @@ def boletinmostrar():
     # 1) Establecer si se muestran previas
     # 2) Recuperar previas de ciclos anteriores
     if previas_mostrar:
-        previas = PREVIAS_ESTABLECER_FUNCION(alumno, boletin)
+        previas = PREVIAS_ESTABLECER_FUNCION(db, alumno, plan, boletin)
     else:
         previas = None
 
@@ -527,7 +587,7 @@ def boletinmostrar():
     return dict(notas=notas, asistencia=asistencia, talleres=talleres,
     previas=previas, concepto=concepto, inscripcion=inscripcion, estudiante=estudiante, boletin=boletin)
 
-@auth.requires_membership('administradores')    
+@auth.requires_membership('administradores')  
 def tallerinscripcion():
     # Formulario de filtro
     # por ciclo, taller y docente
@@ -688,7 +748,7 @@ def conceptos():
         Field("nivel" ,"integer", requires=IS_IN_SET(NIVELES)),
         Field("division", requires=IS_IN_SET(DIVISIONES)),
         Field("boletin", requires=IS_IN_SET(BOLETINES)))
-    if form.process().accepted:
+    if form.process(onvalidation=plan_actualizar).accepted:
         session.conceptosopciones = form.vars
         redirect(URL("conceptoscompletar"))
     return dict(form=form)
@@ -784,3 +844,46 @@ def conceptoscompletar():
         session.flash = "Se actualizaron los conceptos"
         redirect(URL("conceptos"))
     return dict(form=form, datos=datos)
+
+
+def planseleccionar():
+    estudiante_id = int(request.args[1])
+    estudiante = db(db.estudiante.id == estudiante_id).select().first()
+    qp = db.inscripcion.estudiante == estudiante_id
+    qp &= db.inscripcion.ciclo == CICLOS[0]
+    previa = db(qp).select().last()
+    seleccion = False
+
+    if not (previa is None):
+        try:
+            nivel = int(previa.nivel)
+            division = int(previa.division)
+            plan = DIVISIONES_PLAN[nivel][division]
+            ultimo_plan = PLAN_ABREVIACIONES[plan]
+        except TypeError:
+            plan = None
+            ultimo_plan = "Sin información"
+    else:
+        plan = None
+        ultimo_plan = "Sin información"
+
+    if "planes" in session:
+        if estudiante_id in session.planes:
+            plan = int(session.planes[estudiante_id])
+
+    previa = db(db.inscripcion.estudiante == estudiante_id)
+    form = SQLFORM.factory(
+        Field("titulo", "integer",
+              label="Plan",
+              comment="Seleccione un plan. Plan del último ciclo: %s" % ultimo_plan,
+              default=plan,
+              requires=IS_IN_SET(PLAN_ABREVIACIONES)),
+    )
+    if form.process().accepted:
+        if not ("planes" in session):
+            session.planes = dict()
+        session.planes[estudiante_id] = int(form.vars.titulo)
+        seleccion = True
+    return dict(form=form, estudiante=estudiante,
+    seleccion=seleccion)
+

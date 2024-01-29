@@ -23,6 +23,8 @@ __copyright__ = "(C) 2024 Alan Edmundo Etkin. GNU GPL 3."
     {{=A("Inscripción %s ->" % ciclo, _href=URL(c="estudiantes", f="inscripcion", args=[estudiante.id, ciclo]))}}
 {{pass}}
 
+{{=A("Seleccionar plan ->>", _href=URL(c="academicas", f="planseleccionar", args=["estudiante", estudiante.id,]))}}
+
 {{=A("Informar materias aprobadas ->", _href=URL(c="academicas", f="aprobadasingresar", args=[estudiante.id,]))}}
 {{=A("Trayecto ->>>", _href=URL(c="academicas", f="trayectonuevo", args=[estudiante.id,]))}}
 

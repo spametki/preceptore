@@ -9,14 +9,16 @@ __copyright__ = "(C) 2024 Alan Edmundo Etkin. GNU GPL 3."
 <div class="jumbotron jumbotron-fluid background" style="background-color: #333; color:white; padding:30px;word-wrap:break-word;">
   <div class="container center">
     <h1 class="display-5">Organigrama</h1>
-    {{=H5("Turno:", turno, " Nivel:", nivel, " Division:", division)}}
-    {{=H5("Semana del ", DIAS_ROTULOS[fecha.weekday()], " ", fecha.day, "/", fecha.month)}}
+    {{=H3("Turno:", turno, " Nivel:", nivel, " Division:", division)}}
+    {{titulo_mostrar_actualizar()}}
+    {{=TITULO_MOSTRAR}}
+    {{=H3("Semana del ", DIAS_ROTULOS[fecha.weekday()], " ", fecha.day, "/", fecha.month)}}
   </div>
 </div>
 {{end}}
 
 {{for t2 in horarios_semana:}}
-    {{=H5("Horarios turno " + TURNOS_ETIQUETAS[t2])}}
+    {{=H3("Horarios turno " + TURNOS_ETIQUETAS[t2])}}
     {{t = TABLE(THEAD(TR(*[TH(DIAS_ROTULOS[x]) for x in range(len(horarios_semana[t2]))])),
 TBODY(*[TR(*[TD() for y in range(len(horarios_semana[t2]))]) for x in range(len(horarios_semana[t2][0]))]))}}
 

@@ -16,12 +16,16 @@ __copyright__ = "(C) 2024 Alan Edmundo Etkin. GNU GPL 3."
 {{=H3(estudiante.nombre)}}
 {{=H3("Documento: ", estudiante.documento_numero)}}
 {{=H3("Inscripción a ciclo ", ciclo)}}
+{{=H3("Título: ", PLAN_NOMBRES[int(session.planes[estudiante.id])])}}
 
 {{=A("<<<- Lista estudiantes", _href=URL(c="estudiantes", f="estudiantes"))}}
 {{=A("<<- Datos estudiante", _href=URL("estudiantes", "estudiante", args=[estudiante.id,]))}}
 {{for ciclo in CICLOS:}}
     {{=A("<- Inscripción %s" % ciclo, _href=URL(c="estudiantes", f="inscripcion", args=[estudiante.id, ciclo]))}}
 {{pass}}
+
+{{=A("Nuevo plan <-", _href=URL(c="academicas", f="planseleccionar", args=["estudiante", estudiante.id,]))}}
+
 {{=A("<- Seguir cargando materias", _href=URL(c="academicas", f="aprobadasingresar", args=[estudiante.id,]))}}
 
 {{if enviado:}}
@@ -29,6 +33,9 @@ __copyright__ = "(C) 2024 Alan Edmundo Etkin. GNU GPL 3."
 {{pass}}
 
 {{if not enviado:}}
+    <!-- Falta el elemento que muestra automático el plan -->
+    {{=TITULO_MOSTRAR}}
+    {{=TITULO_AUTOCOMPLETAR}}
     {{=form}}
 {{else:}}
     {{=H3("Nuevas materias")}}

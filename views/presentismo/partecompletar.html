@@ -13,25 +13,27 @@ __copyright__ = "(C) 2024 Alan Edmundo Etkin. GNU GPL 3."
   </div>
 </div>
 {{end}}
-{{=H5("Ciclo: ", datos.ciclo)}}
+{{=H3("Ciclo: ", datos.ciclo)}}
 {{if not datos.cuatrimestre is None:}}
-{{=H5("Cuatrimestre: ", datos.cuatrimestre)}}
+{{=H3("Cuatrimestre: ", datos.cuatrimestre)}}
 {{pass}}
 
-{{=H5("Turno: ", datos.turno, "(contraturno)" if datos.contraturno else "")}}
+{{=H3("Turno: ", datos.turno, "(contraturno)" if datos.contraturno else "")}}
 
 {{if not datos.materia is None:}}
-{{=H5("Asignatura: ", datos.materia)}}
+{{=H3("Asignatura: ", datos.materia)}}
 {{pass}}
 
-{{=H5("Nivel: ", datos.nivel)}}
+{{=H3("Nivel: ", datos.nivel)}}
 
 {{if not datos.division is None:}}
-{{=H5("Division: ", datos.division)}}
+{{=H3("Division: ", datos.division)}}
+{{titulo_mostrar_actualizar()}}
+{{=TITULO_MOSTRAR}}
 {{pass}}
 
 {{if not datos.comision is None:}}
-{{=H5("Comisión: ", datos.comision)}}
+{{=H3("Comisión: ", datos.comision)}}
 {{pass}}
 {{=BR()}}
 {{=form}}

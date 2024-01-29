@@ -324,8 +324,8 @@ def horarios_grilla(db, fecha, turno, nivel, division,
         # recuperar asignaturas por cada nota
         for nota in notas:
             filtrar = True
-            if (nota.condicion in (None,
-            *CONDICIONES_PRESENCIALES)):
+            if (nota.promocion in (None,
+            *PROMOCIONES_PRESENCIALES)):
                 if nota.cuatrimestre != None:
                     if nota.cuatrimestre == cuatrimestre:
                         filtrar = False

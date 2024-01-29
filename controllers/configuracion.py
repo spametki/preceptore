@@ -193,6 +193,9 @@ def carganotas():
                            Field("division",
                            requires = IS_EMPTY_OR(IS_IN_SET(
                            DIVISIONES))),
+                           Field("plan",
+                           requires = IS_IN_SET(
+                           PLAN_ABREVIACIONES)),
                            Field("materia",
                            requires=IS_IN_SET(MATERIAS)),
                            Field("comision", 
@@ -310,7 +313,7 @@ def carganotas():
             # actualizar los datos
             filtro_lista = list()
             criterios = ("materia", "ciclo", "turno",
-            "cuatrimestre", "nivel", "division", "comision",
+            "cuatrimestre", "nivel", "division", "plan", "comision",
             "docente")
             
             for f in db.calificacion.fields:
@@ -537,6 +540,7 @@ def notascargardeei():
                     estudiante = "-".join((fila[2], fila[3]))
                     try:
                         estudiante_id = estudiantes[estudiante]
+                        plan = plan_recuperar(db, estudiante_id)
                     except KeyError:
                         estudiante_id = None
                     contador_2 = 0
@@ -553,11 +557,13 @@ def notascargardeei():
                                         estudiante = estudiante_id,
                                         materia = columnas[contador_2][0],
                                         nivel = columnas[contador_2][1],
+                                        plan = plan,
                                         definitiva = nota,
                                         observaciones = "Tomada de Eficiencia Interna",
                                         acredito = True,
                                         promueve = True,
-                                        condicion = "P.D.",
+                                        condicion = CONDICION_POR_DEFECTO,
+                                        promocion = PROMOCION_POR_DEFECTO,
                                         fecha = datetime.date.today())
                                     session.notascargardeei_registros.append(nota_id)
                         contador_2 += 1
@@ -696,6 +702,7 @@ def notascargarlistado():
                 try:
                     # d i) Identificar registro de estudiante
                     estudiante_id = estudiantes[fila[0]]
+                    plan = plan_recuperar(db, estudiante_id)
                 except KeyError as error:
                     errores.append("%s: no se encontró el estudiante" % fila[0])
                     continue
@@ -709,7 +716,7 @@ def notascargarlistado():
 
                     # Si está aprobada y pertenece al plan
                     # db.calificacion.insert(**objeto)
-                    if abreviaciones[materia] in PLAN[nivel]:
+                    if abreviaciones[materia] in PLAN[plan][nivel]:
                         if fila[5].isdigit():
                             nota = int(fila[5])
                             if nota > 5:
@@ -719,6 +726,7 @@ def notascargarlistado():
                                 promueve = True,
                                 acredito = True,
                                 alta_fecha = datetime.date.today(),
+                                plan = plan,
                                 nivel = nivel,
                                 materia = materia,
                                 ciclo = ciclo,

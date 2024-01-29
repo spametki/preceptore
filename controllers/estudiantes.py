@@ -5,6 +5,17 @@ __copyright__ = "(C) 2024 Alan Edmundo Etkin. GNU GPL 3."
 
 @auth.requires_membership('consultas')
 def estudiantes():
+    qi = db.inscripcion.ciclo.belongs(CICLOS)
+    qt = db.estudiante.ingreso >= CICLOS[0]
+
+    inscripciones = db(qi).select()
+    todos = db(qt).select()
+    inscripciones_ids = set([inscripcion.estudiante for inscripcion in inscripciones])
+    todos_ids = set([estudiante.id for estudiante in todos])
+    no_inscriptos = todos_ids - inscripciones_ids
+    qni = db.estudiante.id.belongs(no_inscriptos)
+    pendientes = db(qni).select()
+    
     links = (lambda registro: A("Menú trayecto", _href=URL(
     f="estudiante", args=(registro.estudiante.id,),
     vars=dict(visualizar="true"))),
@@ -12,13 +23,14 @@ def estudiantes():
              _href=URL(f="estudiantemenu",
              args=(registro.estudiante.id,),
              vars=dict(visualizar="true"))))
-    
-    grid = SQLFORM.grid(
-    db.estudiante.id == db.inscripcion.estudiante,
-    links = links, editable=False, deletable=False,
-    details=False, buttons_placement="left")
-    return dict(grid = grid)
 
+    q = db.estudiante.id == db.inscripcion.estudiante
+    grid = SQLFORM.grid(
+    q, 
+    links = links, editable=False, deletable=False,
+    paginate=10,
+    details=False, buttons_placement="left")
+    return dict(grid = grid, pendientes=pendientes)
 
 @auth.requires_membership('administradores')
 def estudiante():
@@ -107,7 +119,7 @@ def inscripcion():
     #       1 -> ciclo
     
     estudiante_id = int(request.args[0])
-    estudiante = estudiante_recuperar(estudiante_id)
+    estudiante = estudiante_recuperar(db, estudiante_id)
     ciclo = int(request.args[1])
     previa_id = None
     finalizado = False
@@ -137,6 +149,7 @@ def inscripcion():
     
     if len(inscripciones) > 0:
         previa_id = inscripciones.last().id
+        
     db.inscripcion.estudiante.writable = \
     db.inscripcion.nivel.writable = \
     db.inscripcion.division.writable = \
@@ -201,4 +214,4 @@ def inscripcion_baja():
         session.flash = "La baja se realizó correctamente"
         redirect(URL("inscripcion", args=[inscripcion.estudiante, inscripcion.ciclo]))
     return dict(form=form)
-    
+

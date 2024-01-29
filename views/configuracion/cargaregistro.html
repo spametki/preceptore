@@ -14,6 +14,8 @@ __copyright__ = "(C) 2024 Alan Edmundo Etkin. GNU GPL 3."
 {{end}}
 
 {{if not enviado:}}
+{{=TITULO_MOSTRAR}}
+{{=TITULO_AUTOCOMPLETAR}}
 {{=form}}
 {{else:}}
 {{=A("Regresar", _href=URL(c="configuracion", f="cargaregistro"))}}

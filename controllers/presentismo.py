@@ -25,7 +25,7 @@ def partedeaula():
         default=datetime.date.today(),
         requires=IS_DATE()),
     )
-    if form.process().accepted:
+    if form.process(onvalidation=plan_actualizar).accepted:
         session.parte = form.vars
         redirect(URL("partecompletar"))
     return dict(form=form)
@@ -567,10 +567,9 @@ def asistenciamostrar():
     # eliminar registros de asistencia fuera de fecha de inscripción o baja
     for item in datos_descarte:
         del(datos[item[0]]["asistencia"][item[1]])
-
+   
     # recorrer registro calculando totales por mes
     for mes in registro:
-
         if not mes in totales_por_mes:
             totales_por_mes[mes] = 0
             totales_inasistencias_por_mes[mes] = 0

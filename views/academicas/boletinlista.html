@@ -14,6 +14,12 @@ __copyright__ = "(C) 2024 Alan Edmundo Etkin. GNU GPL 3."
 {{pass}}
 
 {{inscripciones = list()}}
+
+{{titulo_mostrar_actualizar()}}
+{{=TITULO_MOSTRAR}}
+{{=H3("Nivel: %s" % nivel)}}
+{{=H3("División %s" % division)}}
+
 {{for inscripcion in lista:}}
   {{inscripciones.append(LI(A(inscripcion.estudiante.nombre, _href=URL("boletinmostrar", args=("inscripcion", inscripcion.id)))))}}
 {{pass}}

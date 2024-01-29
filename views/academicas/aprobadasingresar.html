@@ -15,6 +15,7 @@ __copyright__ = "(C) 2024 Alan Edmundo Etkin. GNU GPL 3."
 
 {{=H3(estudiante.nombre)}}
 {{=H3("Documento: ", estudiante.documento_numero)}}
+{{=H3("Plan: %s" % PLAN_ABREVIACIONES[int(session.planes[estudiante.id])])}}
 
 {{=A("<<<- Lista estudiantes", _href=URL(c="estudiantes", f="estudiantes"))}}
 {{=A("<<- Datos estudiante", _href=URL("estudiantes", "estudiante", args=[estudiante.id,]))}}
@@ -23,6 +24,7 @@ __copyright__ = "(C) 2024 Alan Edmundo Etkin. GNU GPL 3."
     {{=A("<- Inscripción %s" % ciclo, _href=URL(c="estudiantes", f="inscripcion", args=[estudiante.id, ciclo]))}}
 {{pass}}
 
+{{=A("Nuevo plan <-", _href=URL(c="academicas", f="planseleccionar", args=["estudiante", estudiante.id,]))}}
 
 {{if enviado:}}
 {{=A("Seguir cargando materias", _href=URL(c="academicas", f="aprobadasingresar", args=[estudiante.id,]))}}

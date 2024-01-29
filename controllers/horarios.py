@@ -32,7 +32,7 @@ def horarios():
         if request.vars["suspension"] == "true":
             suspension = True
 
-    horarios_semana = horarios_grilla(fecha, turno,
+    horarios_semana = horarios_grilla(db, fecha, turno,
     nivel, division, suspension=suspension)
 
     return dict(fecha = fecha, turno = turno, nivel = nivel,
@@ -48,7 +48,7 @@ def horariosconsulta():
     Field("horaslibres", "boolean", default=False,
     label="Horas libres",
     comment="Mostrar suspensiones de actividad"))
-    if form.process().accepted:
+    if form.process(onvalidation=plan_actualizar).accepted:
         opciones = dict(fecha=form.vars.fecha.isoformat(
         ).replace("-", ""))
         if form.vars.horaslibres:
@@ -78,7 +78,7 @@ def estudiantehorarios():
     # recuperar id de estudiante
     estudiante_id = int(request.args[0])
 
-    estudiante = estudiante_recuperar(estudiante_id)
+    estudiante = estudiante_recuperar(db, estudiante_id)
 
     turno = nivel = division = None
     
@@ -97,7 +97,7 @@ def estudiantehorarios():
         raise HTTP(501,
         "No se encontró inscripción para la/el estudiante")
 
-    horarios_semana = horarios_grilla(fecha, turno, nivel,
+    horarios_semana = horarios_grilla(db, fecha, turno, nivel,
     division, estudiante_id = estudiante_id,
     suspension = suspension)
 

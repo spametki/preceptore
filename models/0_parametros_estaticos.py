@@ -36,16 +36,16 @@ DIVISIONES = ("1", "2", "3", "4", "5", "6", "7", "8", "9", "10")
 CUATRIMESTRES = (1, 2)
 COMISIONES = ("A", "B", "C", "D")
 
-GENEROS = ("varón", "mujer", "no binario")
+GENEROS = ("Hombre", "Mujer", "No binario")
 
 SITUACIONES = ("Interina/o", "Suplente", "Titular", "Otra")
-CONDICIONES = ("P.A.", "P.E.P.", "Libre", "P.D.", "Regular",
-               "No regular", "Previa", "Nivelación",
-               "Equivalencia", "Movilidad",
-               "Resolución", "Baja")
-
-CONDICIONES_PRESENCIALES = ("P.D.", "Regular")
+CONDICIONES = ("Libre", "Regular", "No regular", "Baja")
 CONDICION_POR_DEFECTO = "Regular"
+PROMOCIONES = ("P.D", "P.A.", "P.E.P.", "Previa", "Nivelación",
+               "Equivalencia", "Movilidad",
+               "Resolución interna")
+PROMOCION_POR_DEFECTO = "P.D."
+PROMOCIONES_PRESENCIALES = ("P.D.",)
 
 # No se califican pero deben figurar en el horario
 ESPACIOS_COMUNES = ("Tutoría",)
