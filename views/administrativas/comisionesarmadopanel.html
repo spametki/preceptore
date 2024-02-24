@@ -1,0 +1,53 @@
+{{
+__author__ = "Alan Edmundo Etkin <spametki@gmail.com>"
+__copyright__ = "(C) 2024 Alan Edmundo Etkin. GNU GPL 3."
+}}
+
+{{extend 'layout.html'}}
+
+{{block header}}
+<div class="jumbotron jumbotron-fluid background" style="background-color: #333; color:white; padding:30px;word-wrap:break-word;">
+  <div class="container center">
+    <h1 class="display-5">Armado de comisiones</h1>
+  </div>
+</div>
+{{end}}
+
+<!-- En esta sección va un custom form con los select para cada comisión y uno para el listado de estudiantes-->
+
+{{=form.custom.begin}}
+  <div>
+  <span>{{=H5("Lista de alumnas/os")}}{{=form.custom.widget.listado}}</span>
+  {{for row in variables["comisiones"]:}}
+    <span>
+    {{=H5("Comisión %s. Docente: %s" % (row.asignatura.comision, row.docente.nombre))}}
+    {{=form.custom.widget[row.asignatura.comision]}}
+    {{=INPUT(_type="button", _id="agregar_%s" % row.asignatura.comision, _value="Agregar")}}
+    {{=INPUT(_type="button", _id="quitar_%s" % row.asignatura.comision, _value="Quitar")}}
+    </span>
+  {{pass}}
+  <span>{{=H5("Mensajes")}}{{=form.custom.widget.mensajes}}</span>
+  </div>
+{{=form.custom.submit}}
+{{=form.custom.end}}
+{{=A("Volver al filtro de materias", _href=URL("comisionesarmado"))}}
+{{
+texto = """
+var datos = {datos};
+var asignaturas = {asignaturas};
+var ciclo = {ciclo};
+var turno = {turno};
+var plan = {plan};
+var materia = {materia};
+var nivel = {nivel};
+var division = {division};
+var cuatrimestre = {cuatrimestre};
+var planes = {planes};
+var horarios = {horarios};
+var docentes = {docentes};
+var comisiones = {comisiones};
+var designaciones = {designaciones};
+""".format(**variables_js)
+}}
+{{=SCRIPT(texto, _type="text/javascript")}}
+<script src="{{=URL('static','js/preceptore-comisionesarmado.js')}}" type="text/javascript"/>

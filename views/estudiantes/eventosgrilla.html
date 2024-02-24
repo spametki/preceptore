@@ -1,0 +1,30 @@
+{{
+__author__ = "Alan Edmundo Etkin <spametki@gmail.com>"
+__copyright__ = "(C) 2024 Alan Edmundo Etkin. GNU GPL 3."
+}}
+
+{{extend 'layout.html'}}
+
+{{block header}}
+<div class="jumbotron jumbotron-fluid background" style="background-color: #333; color:white; padding:30px;word-wrap:break-word;">
+  <div class="container center">
+    <h1 class="display-5">Seguimiento estudiantes</h1>
+  </div>
+</div>
+{{end}}
+{{contador = 0}}
+{{for key in session.eventosfiltro:}}
+  {{if not (session.eventosfiltro[key] in ("", None)):}}
+    {{if key == "plan":}}
+      {{=key.capitalize() + ": " + PLAN_NOMBRES[int(session.eventosfiltro["plan"])]}}      
+    {{else:}}
+      {{=key.capitalize() + ": " + session.eventosfiltro[key]}}
+    {{pass}}
+    {{if not (contador == len(session.eventosfiltro) -1):}}
+      {{=" | "}}
+    {{pass}}
+  {{pass}}
+  {{contador +=1}}
+{{pass}}
+{{=A("Volver al filtro de estudiantes", _href=URL("eventosfiltro"))}}
+{{=grid}}

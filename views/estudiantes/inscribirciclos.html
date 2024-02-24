@@ -1,0 +1,24 @@
+{{
+__author__ = "Alan Edmundo Etkin <spametki@gmail.com>"
+__copyright__ = "(C) 2024 Alan Edmundo Etkin. GNU GPL 3."
+}}
+
+{{extend 'layout.html'}}
+
+{{block header}}
+
+<div class="jumbotron jumbotron-fluid background" style="background-color: #333; color:white; padding:30px;word-wrap:break-word;">
+<div class="container center">
+    <h1 class="display-5">Alta de estudiante</h1>
+</div>
+</div>
+{{end}}
+
+{{=H3(estudiante.nombre)}}
+{{=H3("%s nro. %s" % (estudiante.documento_tipo, estudiante.documento_numero))}}
+
+{{=A("Inscribir a ciclo %s" % CICLOS[0], _href=URL(c="estudiantes", f="inscripcion", args=(estudiante.id, CICLOS[0])))}}
+{{=BR()}}
+{{=A("Inscribir a ciclo %s" % CICLOS[1], _href=URL(c="estudiantes", f="inscripcion", args=(estudiante.id, CICLOS[1])))}}
+{{=BR()}}
+{{=A("Regresar al listado sin inscribir", _href=URL(c="estudiantes", f="estudiantes"))}}
