@@ -3,20 +3,10 @@
 __author__ = "Alan Edmundo Etkin <spametki@gmail.com>"
 __copyright__ = "(C) 2024 Alan Edmundo Etkin. GNU GPL 3."
 
-# Parámetros que requieren funciones en 3_funciones.py
-
-# Objeto CRUD para ABM
-from gluon.tools import Crud # TODO: no se usa más
+# objetos que dependen de db
 crud = Crud(db) # TODO: no se usa más
 
-import datetime
-import os
-import csv
-
-# Deshabilitar para evitar excepción por falta de librería en
-# web2py windows standalone
-from dateutil.relativedelta import relativedelta
-import difflib
+# Parámetros que requieren funciones en x_funciones.py
 
 # lista de avisos para el usuario
 session.avisos = []
@@ -25,22 +15,19 @@ session.avisos = []
 #### Conversores de datos para carga automatizada
 
 CORRELATIVIDADES = {
-    1:{
-        1:{},
-        2:{},
-        3:{},
-        4:{},
-        5:{},
-        6:{}
-    },
-    2:{
-        1:{},
-        2:{},
-        3:{},
-        4:{},
-        5:{},
-        6:{}
-    }
+1: {
+1:{},
+2:{"Mate": ((1, 0),), "LyL": ((1, 1),),
+"Hist": ((1, 2),), "Geo": ((1, 3),), "Bio": ((1, 4),),
+"DyS": correlativasdys, "Ing": ((1, 6),), "Inf": ((1, 5),)},
+3:{"Mate": ((2, 0),), "LyL": ((2, 1),), "Hist": ((2, 2),),
+"Geo": ((2, 3),), "Ing": ((2, 7),), "Inf": ((2, 6),),
+"Quim": ((2, 5),), "Eco": ((2, 4),)},
+4:{"Mate": ((3, 0),), "LyL": ((3, 1),),
+"Fis": ((3, 3), (3, 4), (3, 5)),
+"FEC": ((3, 3), (3, 5), (3, 0)), "CVT": ((3, 4),),
+"Proy": correlativasproy, "Ing": ((3, 6),)}
+}
 }
 
 REGISTRO_CONVERSORES = {

@@ -17,8 +17,10 @@ response.menu = [(T('Menú'), False, URL('default', 'index'),
                      ('Asignaturas', False, URL('administrativas', 'asignaturas'), []),
                      ('Docentes', False, URL('administrativas', 'docentes'), []),
                      ('Designaciones', False, URL('administrativas', 'designaciones'), []),
+                     ('Armado de comisiones', False, URL('administrativas', 'comisionesarmado'), []),
                      ('Parte de aula', False, URL('presentismo', 'partedeaula'), []),
                      ('Asistencia', False, URL('presentismo', 'asistencia'), []),
-                     ('Boletines', False, URL('academicas', 'boletin'), []),                     
+                     ('Boletines', False, URL('academicas', 'boletin'), []),
+                     ('Seguimiento estudiantes', False, URL('estudiantes', 'eventosfiltro'), [])
                      ])]
 

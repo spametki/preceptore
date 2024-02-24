@@ -30,6 +30,7 @@ def estudiantes():
     links = links, editable=False, deletable=False,
     paginate=10,
     details=False, buttons_placement="left")
+    
     return dict(grid = grid, pendientes=pendientes)
 
 @auth.requires_membership('administradores')
@@ -214,4 +215,97 @@ def inscripcion_baja():
         session.flash = "La baja se realizó correctamente"
         redirect(URL("inscripcion", args=[inscripcion.estudiante, inscripcion.ciclo]))
     return dict(form=form)
+
+@auth.requires_membership('consultas')
+def eventosfiltro():
+    form = SQLFORM.factory(
+        Field("plan", "integer", requires=IS_EMPTY_OR(IS_IN_SET(PLAN_ABREVIACIONES))),
+        Field("ciclo", "integer", requires=IS_EMPTY_OR(IS_IN_SET(CICLOS)),
+        default=ciclo_determinar(datetime.date.today())),
+        Field("turno", requires=IS_EMPTY_OR(IS_IN_SET(TURNOS))),
+        Field("nivel", "integer", requires=IS_EMPTY_OR(IS_IN_SET(NIVELES))),
+        Field("division", "integer", requires=IS_EMPTY_OR(IS_IN_SET(DIVISIONES))),
+        Field("materia", requires=IS_EMPTY_OR(IS_IN_SET(MATERIAS))),
+        Field("comision", requires=IS_EMPTY_OR(IS_IN_SET(COMISIONES))),
+        Field("motivo", requires=IS_EMPTY_OR(IS_IN_SET(NOTA_MOTIVOS))))
+    if form.process().accepted:
+        session.eventosfiltro = form.vars
+        redirect(URL("eventosgrilla"))
+    return dict(form=form)
+
+@auth.requires_membership('consultas')
+def eventosgrilla():
+    administrador = auth.has_membership("administradores")
+    variables = session.eventosfiltro
+    
+    # 1) filtro estudiantes por plan, ciclo, turno, nivel, y division
+    
+    qe = db.inscripcion.estudiante == db.estudiante.id
+    
+    for key in ("ciclo", "turno", "nivel", "division"):
+        if not (variables[key] in ("", None)):
+            qe &= db.inscripcion[key] == variables[key]
+
+    # 1a) Si se seleccionó un plan, hay que establecer un conjunto
+    # de condiciones según el nivel y división
+    condiciones = list()
+    if not (variables.plan in ("", None)):
+        for nivel in NIVELES:
+            for division in DIVISIONES:
+                if DIVISIONES_PLAN[nivel][int(division)] == int(variables.plan):
+                    condiciones.append((db.inscripcion.nivel == nivel) & (db.inscripcion.division == division))
+
+    if len(condiciones) > 0:
+        if len(condiciones) == 1:
+            qe &= condiciones[0]
+        else:
+            qe2 = condiciones[0]
+            contador = 0
+            for condicion in condiciones:
+                contador += 1
+                if contador > 1:
+                    qe2 |= condicion
+            qe &= qe2
+
+    alumnos = db(qe).select()
+    nombres = [(alumno.estudiante.id, alumno.estudiante.nombre) for alumno in alumnos]
+    
+    c1 = set([alumno.estudiante.id for alumno in alumnos])
+    # 2) filtro calificaciones por plan, ciclo, turno, nivel, division, materia, y comisión
+    qc = db.calificacion.id > 0
+    for key in ("plan", "ciclo", "turno", "nivel", "division", "materia", "comision"):
+        if not (variables[key] in ("", None)):
+            if key == "plan":
+                qc &= db.calificacion.titulo == variables[key]
+            else:
+                qc &= db.calificacion[key] == variables[key]
+
+    calificaciones = db(qc).select()
+    c2 = set([calificacion.estudiante for calificacion in calificaciones])
+
+    estudiantes = set.intersection(c1, c2)
+
+    nombres_listado = list()
+    for item in nombres:
+        if item[0] in estudiantes:
+            nombres_listado.append(item)
+
+    db.nota.estudiante.requires = IS_IN_SET(nombres_listado)
+
+    # 3) filtrar notas
+    qn = db.nota.id > 0
+    qn = db.nota.estudiante.belongs(estudiantes)
+    if variables.motivo in NOTA_MOTIVOS:
+        qn &= db.nota.motivo == variables.motivo
+
+    if len(nombres_listado) == 0:
+        session.flash = "No se encontraron estudiantes para el filtro"
+        redirect(URL("eventosfiltro"))
+
+    grid = SQLFORM.grid(
+    qn,
+    editable=administrador, deletable=administrador,
+    paginate=30,
+    details=False, buttons_placement="left")
+    return dict(grid=grid)
 

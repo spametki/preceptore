@@ -1,8 +1,11 @@
-
 ## 1.1
 
 - Reestructuración de la app para soporte de múltiples planes de estudio
 - Cambio en la tabla estudiante. campos dirección y partido en domicilio
+- Módulo de armado de comisiones
+- Módulo de tabla notas para seguimiento de estudiantes
+- Redistribución de las condiciones y tipo de cursada para analítico
+
 
 ## 1.0
 

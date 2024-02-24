@@ -444,4 +444,3 @@ for f in NOTAS_FORMATO:
 
 for k in ASISTENCIA:
     db.asistencia[ASISTENCIA_CATEGORIAS[k]].label = ASISTENCIA[k]
-

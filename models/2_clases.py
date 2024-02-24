@@ -3,8 +3,6 @@
 __author__ = "Alan Edmundo Etkin <spametki@gmail.com>"
 __copyright__ = "(C) 2024 Alan Edmundo Etkin. GNU GPL 3."
 
-from gluon.sqlhtml import OptionsWidget, add_class
-
 class RadioWidgetAlternative(OptionsWidget):
 
     @classmethod

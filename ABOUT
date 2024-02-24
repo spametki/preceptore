@@ -2,8 +2,6 @@ Preceptore es un sistema de gestión administrativa académica para escuelas sec
 La versión actual contempla el almacenamiento y actualización de registros de notas, POF, alumnos y el seguimiento de los horarios personalizados por caja curricular; incluye cálculo de horas libres por curso y por alumno. Incluye un módulo de asistencia a clase con parte diario de aula por asignatura o general y un reporte pormenorizado de asistencia con rango variable y cálculo automático de media y promedios de presentismo por estudiante; este módulo facilita los cálculos mensuales de registro de curso y también los informes por asignatura.
 La aplicación genera reportes al vuelo de los distintos registros y soporta la búsqueda avanzada con múltiples criterios; administra inscripciones e implementa el cálculo e informe de progreso académico por alumno incluyendo detalle de trayectos, materias aprobadas, materias pendientes y permite la edición de los registros de matrículación e inscripción por materia.
 
-Preceptore es una app de web2py, lo que significa que se debe ejecutar instalada en el framework web web2py creado por Massimo Di Pierro. Para instrucciones sobre la instalación de web2py y cómo instalar apps se recomienda el libro de web2py: http://www.web2py.com/books/default/chapter/41/03/
-
 Autor: Alan Edmundo Etkin <spametki@gmail.com>
 Licencia: GPL 3.0
 

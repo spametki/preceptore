@@ -252,12 +252,12 @@ def trayecto_calcular(plan, notas):
             # ¿la aprobó o promovió?
             promueve = acredito = False
             for nota in notas:
-                if int(nota.nivel) == nivel:
-                    if nota.materia == ABREVIACIONES[
+                if int(nota["nivel"]) == nivel:
+                    if nota["materia"] == ABREVIACIONES[
                     materia]:
-                        if nota.promueve:
+                        if nota["promueve"]:
                             promueve = True
-                        if nota.acredito:
+                        if nota["acredito"]:
                             acredito = True
 
             # si: no la debe cursar
@@ -280,13 +280,13 @@ def trayecto_calcular(plan, notas):
                         for t in CORRELATIVIDADES[plan][nivel][
                         materia]:
                             for nota in notas:
-                                if (int(nota.nivel) == t[0]
-                                ) and (nota.materia == \
+                                if (int(nota["nivel"]) == t[0]
+                                ) and (nota["materia"] == \
                                 ABREVIACIONES[PLAN[plan][t[0]][t[1]]]
-                                ) and ((nota.promueve == True
-                                ) or (nota.acredito == True)):
+                                ) and ((nota["promueve"] == True
+                                ) or (nota["acredito"] == True)):
                                     aprobadas += 1
-                                    if nota.acredito != True:
+                                    if nota["acredito"] != True:
                                         # TODO: informar que
                                         # cursa sin acreditar
                                         pass
@@ -311,7 +311,7 @@ def horarios_grilla(db, fecha, turno, nivel, division,
 
     ciclo = ciclo_determinar(fecha)
     cuatrimestre = cuatrimestre_determinar(fecha)
-    plan = DIVISIONES_PLAN[nivel][division]
+    plan = DIVISIONES_PLAN[int(nivel)][int(division)]
     
     if estudiante_id != None:
         # caso 1) obtener todas las asignaturas
@@ -356,7 +356,7 @@ def horarios_grilla(db, fecha, turno, nivel, division,
         query = db.asignatura.turno == turno
         query &= db.asignatura.nivel == nivel
         query &= db.asignatura.division == division
-        query &= db.asignatura.titulo == nota.titulo
+        query &= db.asignatura.titulo == plan
         
         query &= db.asignatura.materia.belongs(
         ESPACIOS_COMUNES)
@@ -371,7 +371,7 @@ def horarios_grilla(db, fecha, turno, nivel, division,
         query = db.asignatura.turno == turno
         query &= db.asignatura.nivel == nivel
         query &= db.asignatura.division == division
-        query &= db.asignatura.titulo == nota.titulo
+        query &= db.asignatura.titulo == plan
 
         # para ordenar por hora en .select()
         # ejemplo: orderby=db.asignatura.lunes 
@@ -597,11 +597,23 @@ def materia_abreviar(materia):
 def correlativasdys(nivel, notas):
     contador = 0
     for nota in notas:
-        if (int(nota.nivel) == 1) and (True in (nota.promueve,
-        nota.acredito)) and (not (nota.materia in ("Inglés",
+        if (int(nota["nivel"]) == 1) and (True in (nota["promueve"],
+        nota["acredito"])) and (not (nota["materia"] in ("Inglés",
         "Informática"))):
             contador += 1
     if contador >= 2:
+        return True
+    else:
+        return False
+
+def correlativasproy(nivel, notas):
+    contador = 0
+    for nota in notas:
+        if (int(nota["nivel"]) in (1, 2)) and (True in (
+        nota["promueve"], nota["acredito"])) and (
+        not (nota["materia"] in ("Inglés", "Informática"))):
+            contador += 1
+    if contador >= 9:
         return True
     else:
         return False
@@ -610,10 +622,10 @@ def correlativasmedia(plan, nivel, notas):
     # para educación media
     # sin trayectos de reingreso
     anteriores = len(PLAN[plan](nivel))
-    acreditadas = 0    
+    acreditadas = 0
     if int(nivel) > 1:
         for nota in notas:
-            if nota.acredito == True:
+            if nota["acredito"] == True:
                 acreditadas += 1
         if acreditadas >= anteriores -2:
             return True
@@ -622,18 +634,6 @@ def correlativasmedia(plan, nivel, notas):
     else:
         return True
     
-def correlativasproy(nivel, notas):
-    contador = 0
-    for nota in notas:
-        if (int(nota.nivel) in (1, 2)) and (True in (
-        nota.promueve, nota.acredito)) and (
-        not (nota.materia in ("Inglés", "Informática"))):
-            contador += 1
-    if contador >= 9:
-        return True
-    else:
-        return False
-
 def notas_conversores_estudiante(t):
     documento = None
     if "," in t[0]:
@@ -1576,4 +1576,3 @@ def titulo_mostrar_actualizar():
     else:
         texto = "sin datos"
     TITULO_MOSTRAR[0] = "Plan: %s" % texto
-

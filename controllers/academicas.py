@@ -408,7 +408,7 @@ def trayectonuevo():
                     "ciclo": ciclo,
                     "turno": turno,
                     "nivel": n,
-                    "plan": plan,
+                    "titulo": plan,
                     "division": divisiones[n-1],
                     "materia": materia,
                     "condicion": CONDICION_POR_DEFECTO}

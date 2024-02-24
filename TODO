@@ -1,19 +1,14 @@
-- Alta de estudiante e inscripción manual
-- Redistribución de las condiciones y tipo de cursada para analítico. Por
-Ej.: P.D. y Regular no son excluyentes entre sí. Ver opciones de cursada
-en normativa de títulos
 
-controllers/academicas.py
- - Método para armar comisiones de materias cuatrimestrales
- - Método para distribuir comisiones de materias anuales
+- El trayecto automático "trayectonuevo" ingresa materias
+del primer ciclo en la lista de ciclos en el modelo. Si estás
+en 2024 las carga como de 2023
  - Altas y bajas individuales de comisiones cuatrimestrales
  - Altas y bajas individuales de materias anuales
  - Trayecto solo visualizar para menú de trayecto: action trayecto;
  agregar a menú
  - Action para editar un boletin, o sea modificar en una sola
  grilla múltiples registros de db.calificacion
- - Action conceptoscompletar:
-     - eliminar redundancia en objetos dict
+ - Action conceptoscompletar: eliminar redundancia en objetos dict
 
 controllers/academicas.py
 - Action carganotasconfirmar:

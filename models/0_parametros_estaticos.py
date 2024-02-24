@@ -3,7 +3,23 @@
 __author__ = "Alan Edmundo Etkin <spametki@gmail.com>"
 __copyright__ = "(C) 2024 Alan Edmundo Etkin. GNU GPL 3."
 
+# Librerías externas
 import json
+import datetime
+import os
+import csv
+import difflib
+
+# módulos web2py
+# Objeto CRUD para ABM
+from gluon.tools import Crud # TODO: no se usa más
+
+# Clases para x_clases.py
+from gluon.sqlhtml import OptionsWidget, add_class
+
+# Deshabilitar para evitar excepción por falta de librería en
+# web2py windows standalone
+from dateutil.relativedelta import relativedelta
 
 """ Parámetros estáticos que no requieren otros objetos
 """
@@ -24,15 +40,15 @@ CICLO_FIN = (31, 12) # TODO: es fin de clases regulares
 CUATRIMESTRE_CAMBIO = (1, 8)
 TURNOS = ("M", "T", "N")
 TURNOS_ETIQUETAS = {"M": "mañana", "T": "tarde", "N": "Noche"}
-NIVELES = (1, 2, 3, 4, 5, 6)
+NIVELES = (1, 2, 3, 4)
 
 NUMEROS_ROMANOS = {1: "I", 2: "II", 3:"III",
 4:"IV", 5:"V", 6:"VI", 7:"VII", 8:"VIII",
 9:"IX", 10:"X"}
 
 # Máximo de niveles simultáneos por ciclo
-NIVELES_SIMULTANEOS = 1
-DIVISIONES = ("1", "2", "3", "4", "5", "6", "7", "8", "9", "10")
+NIVELES_SIMULTANEOS = 3
+DIVISIONES = ("1", "2", "3", "4")
 CUATRIMESTRES = (1, 2)
 COMISIONES = ("A", "B", "C", "D")
 
@@ -53,80 +69,44 @@ ESPACIOS_COMUNES = ("Tutoría",)
 DOCUMENTOS = ("DNI", "DU", "CI", "Pasaporte", "Otro")
 
 HORARIOS = {
- "M": (("7:40", "8:20"), ("8:20", "9:00"), ("9:10", "9:50"),
-       ("9:50", "10:30"), ("10:40", "11:20"), ("11:20", "12:00"),
-       ("12:10", "12:50")),
- "T": (("12:50", "13:30"), ("13:30", "14:10"), ("14:20", "15:00"),
-       ("15:00", "15:40"), ("15:50", "16:30"), ("16:30", "17:10"),
-       ("17:20", "18:00")),
+ "M": (("7:45", "8:45"), ("8:55", "9:55"), ("10:10", "10:50"),
+       ("10:50", "11:30"), ("11:35", "12:15")),
+ "T": (("13:30", "14:20"), ("14:30", "15:20"), ("15:35", "16:20"),
+       ("16:20", "17:00"), ("17:05", "17:50")),
  "N": (("18:00", "18:30"), ("18:30", "19:00"), ("19:00", "19:30"),
        ("19:30", "20:00"), ("20:10", "20:40"), ("20:40", "21:10"),
        ("21:20", "21:50"), ("21:50", "22:20"), ("22:20", "22:50"))
 }
 
-RECREOS = (("9:00", "9:10"), ("10:30", "10:40"),
-           ("12:00", "12:10"), ("14:10", "14:20"),
-           ("15:40", "15:50"), ("17:10", "17:20"),
-           ("20:00", "20:10"), ("21:10", "21:20"))
+RECREOS = (("8:45", "8:55"), ("9:55", "10:10"),
+           ("11:30", "11:35"), ("14:20", "14:30"),
+           ("15:20", "15:35"), ("17:00", "17:05"))
+
+
+
+MATERIAS = ("Matemática", "Lengua y Literatura", "Historia",
+            "Geografía", "Biología", "Inglés", "Informática", 
+            "Desarrollo y Salud", "Tutoría", "Taller", "Apoyo",
+            "Física", "Química", "Economía",
+            "Ciencias de la Vida y de la Tierra", "Proyecto",
+            "Formación Ética y Ciudadana")
 
 # Indica a qué división pasa según el nivel
 DIVISIONES_SECUENCIA = (
-("1", "1", "1", "1", "1", "1"),
-("2", "2", "2", "2", "2", "2"),
-("3", "3", "3", "3", "3", "3"),
-("4", "4", "4", "4", "4", "4"),
-("5", "5", "5", "5", "5", "5"),
-("6", "6", "6", "6", "6", "6"),
-("7", "7", "7", "7", "7", "7"),
-("8", "8", "8", "8", "8", "8"),
-("9", "9", "9", "9", "9", "9"),
-("10", "10", "10", "10", "10", "10"))
+("1", "1", "1", "1"),
+("2", "2", "2", "2")
+)
 
-MATERIAS = ("Historia del Arte y del Diseño", "Prácticas del Diseño", "Fotografía y Producción Audiovisual Publicitaria", "Introducción a la Publicidad", "Tipografía", "Identidad Visual", "Tecnología de Control", "Ilustración", "Educación Artística", "Taller", "Taller de Ciclo Básico", "Taller de Diseño", "Educación Ciudadana", "Tecnología de la Representación", "Matemática", "Lengua y Literatura", "Historia", "Geografía", "Biología", "Inglés", "Tutoría", "Física", "Química", "Tutoría", "Ciudadanía y Trabajo", "Redacción Publicitaria", "Packaging", "Psicología Aplicada", "Diseño Editorial", "Planificación y Medios", "Lenguaje Audiovisual", "Economía y Gestión de las Organizaciones", "Promo Vía Pública", "Ciencia y Tecnología", "Comunicaciones Integradas de Marketing", "Gestión de los Procesos Productivos", "Investigación de Mercado", "Educación Física", "Producción Gráfica")
 
-MATERIAS_TRAYECTO_EXCLUIR = ()
+MATERIAS_TRAYECTO_EXCLUIR = ("Inglés", "Informática")
 
-ABREVIACIONES = {
-"EF": "Educación Física",
-"HdA": "Historia del Arte y del Diseño",
-"PD": "Prácticas del Diseño",
-"FyPAP": "Fotografía y Producción Audiovisual Publicitaria",
-"IP": "Introducción a la Publicidad",
-"Tip": "Tipografía",
-"IV": "Identidad Visual",
-"TDC": "Tecnología de Control",
-"Il": "Ilustración",
-"EA": "Educación Artística",
-"Tall": "Taller",
-"TCB": "Taller de Ciclo Básico",
-"TD": "Taller de Diseño",
-"EC": "Educación Ciudadana",
-"TdlR": "Tecnología de la Representación",
-"Mate": "Matemática",
-"LyL": "Lengua y Literatura",
-"Hist": "Historia",
-"Geo": "Geografía",
-"Bio": "Biología",
-"Ing": "Inglés",
-"Tut": "Tutoría",
-"Fis": "Física",
-"Quim": "Química",
-"Tut": "Tutoría",
-"CyTr": "Ciudadanía y Trabajo",
-"RP": "Redacción Publicitaria",
-"PKG": "Packaging",
-"PA": "Psicología Aplicada",
-"DE": "Diseño Editorial",
-"PyM": "Planificación y Medios",
-"LA": "Lenguaje Audiovisual",
-"EyG": "Economía y Gestión de las Organizaciones",
-"PVP": "Promo Vía Pública",
-"CyTec": "Ciencia y Tecnología",
-"CIM": "Comunicaciones Integradas de Marketing",
-"GPP": "Gestión de los Procesos Productivos",
-"IdM": "Investigación de Mercado",
-"PG": "Producción Gráfica"
-}
+ABREVIACIONES = {"Mate": "Matemática", "LyL": "Lengua y Literatura", "Hist": "Historia",
+            "Geo": "Geografía", "Bio": "Biología", "Ing": "Inglés", "Inf": "Informática", 
+            "DyS": "Desarrollo y Salud", "Tut": "Tutoría", "Tall": "Taller", "Ap": "Apoyo",
+            "Fis": "Física", "Quim": "Química", "Eco": "Economía",
+            "CVT": "Ciencias de la Vida y de la Tierra", "Proy": "Proyecto",
+            "FEC": "Formación Ética y Ciudadana", "Tut": "Tutoría",
+            "Tall": "Taller", "Ap": "Apoyo"}
 
 DIAS = ("lunes", "martes", "miercoles", "jueves", "viernes")
 
@@ -191,28 +171,22 @@ NOTAS_FORMATO = {"nota_01":{"tipo": "concepto",
 # para que la inscripción incluya plan
 
 PLAN = {
-        1:{
-            1:("EF", "TdlR", "Geo", "Hist", "Tall", "Bio", "LyL", "EA", "EC", "Mate"),
-            2:("EF", "Hist", "Tall", "Mate", "TdlR", "Geo", "EC", "LyL", "Fis", "Ing", "Bio"),
-            3:("EF", "Fis", "Hist", "EC", "Mate", "Ing", "Tall", "TdlR", "LyL", "Geo", "Quim"),
-            4:("EF", "Tall", "HdA", "PD", "FyPAP", "Ing", "IP", "CyTr", "RP", "Mate", "PA", "LyL"),
-            5:("EF", "Tall", "LyL", "PD", "Ing", "FyPAP", "PyM", "Mate", "LA", "RP", "HdA"),
-            6:("EF", "EyG", "Tall", "CyTec", "PD", "PyM", "RP", "CIM", "HdA", "GPP", "IdM", "FyPAP")
-        },
-        2:{
-            1:("Geo", "Hist", "Tall", "Bio", "LyL", "EA", "EC", "Mate"),
-            2:("EF", "Tall", "Mate", "TdlR", "Geo", "EC", "LyL", "Fis", "Ing", "Bio"),
-            3:("EF", "Fis", "EC", "Mate", "Ing", "Tall", "TdlR", "LyL", "Geo", "Quim"),
-            4:("EF", "Tall", "HdA", "FyPAP", "Ing", "IP", "CyTr", "RP", "Mate", "PA", "LyL"),
-            5:("EF", "Tall", "LyL", "PD", "FyPAP", "PyM", "Mate", "LA", "RP", "HdA"),
-            6:("EF", "EyG", "Tall", "CyTec", "PyM", "RP", "CIM", "HdA", "GPP", "IdM", "FyPAP")
-        }
+1 : {
+        1:("Mate", "LyL", "Hist",
+           "Geo", "Bio", "Inf", "Ing"),
+        2:("Mate", "LyL", "Hist",
+           "Geo", "Bio", "DyS",
+           "Inf", "Ing"),
+        3:("Mate", "LyL", "Hist",
+           "Geo", "Quim", "Eco", "Ing"),
+        4:("Mate", "LyL", "Fis",
+           "FEC", "Proy",
+           "CVT", "Ing")
+       }
 }
 
-PLAN_NOMBRES = {1: "Técnico en Comunicación Publicitaria",
-                2: "Técnico en Producción Gráfica"}
-
-PLAN_ABREVIACIONES = {1: "Publicidad", 2: "Gráfico"}
+PLAN_NOMBRES = {1: "Bachiller"}
+PLAN_ABREVIACIONES = {1: "Bachiller"}
 
 # Correlatividades: "Materia": ((Nivel, nro. de índice), ...)
 #                   Nivel se indica 1, 2, 3,...
@@ -224,23 +198,19 @@ PLAN_ABREVIACIONES = {1: "Publicidad", 2: "Gráfico"}
 #                   de un elemento
 
 DIVISIONES_PLAN = (
-(None,None,None,None,None,None,None,None,None,None,None),
-(None,1,1,1,2,2,2,2,2,2,2),
-(None,1,1,1,2,2,2,2,2,2,2),
-(None,1,1,1,2,2,2,2,2,2,2),
-(None,1,1,1,2,2,2,2,2,2,2),
-(None,1,1,1,2,2,2,2,2,2,2),
-(None,1,1,1,2,2,2,2,2,2,2),
+(None,None,None,None, None),
+(None,1,1,1,1),
+(None,1,1,1,1),
+(None,1,1,1,1),
+(None,1,1,1,1)
 )
 
 DIVISIONES_TURNOS = (
-(None,None,None,None,None,None,None,None,None,None,None),
-(None,"M","M","M","M","T","T","T","N","N","N"),
-(None,"M","M","M","M","T","T","T","N","N","N"),
-(None,"M","M","M","M","T","T","T","N","N","N"),
-(None,"M","M","M","M","T","T","T","N","N","N"),
-(None,"M","M","M","M","T","T","T","N","N","N"),
-(None,"M","M","M","M","T","T","T","N","N","N"),
+(None,None,None,None,None),
+(None,"M","M","M","M"),
+(None,"M","M","M","M"),
+(None,"M","M","M","M"),
+(None,"M","M","M","M")
 )
 
 ASISTENCIA = {"p": "Presente", "t": "Tarde", "tj": "Tarde justificado", "ap": "Ausente con presencia",
@@ -301,7 +271,7 @@ NOTAS_PARAMETROS = {
 "definitiva": "N"
 }
 
-NOTA_MOTIVOS = ("Asistencia", "Convivencia", "Administrativa", "Comunicación", "Otros")
+NOTA_MOTIVOS = ("Asistencia", "Convivencia", "Administrativa", "Comunicación", "Calificaciones", "Otros")
 
 # Talleres extracurriculares
 TALLERES = ()
@@ -386,4 +356,3 @@ jQuery(document).ready(function(){
 
 # Elemento que actualiza el plan cuando se cambian nivel y división
 TITULO_AUTOCOMPLETAR = SCRIPT(TITULO_SCRIPT, _type="text/javascript")
-
